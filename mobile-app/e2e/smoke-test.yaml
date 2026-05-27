@@ -1,0 +1,34 @@
+appId: com.comprainteligente.rd
+---
+- launchApp:
+    clearState: true
+
+# Smoke Test 1: Navegación y Dashboards (Sin Mocks)
+- assertVisible: "¡Buenos días!"
+- assertVisible: "Ahorro total este mes"
+- assertVisible: "RD$ 0" # Valida que empezamos en 0 sin datos quemados
+
+# Smoke Test 2: Flujo de Creación de Lista y Búsqueda
+- tapOn: "Nueva lista"
+- assertVisible: "Nueva Lista"
+- tapOn: "Buscar productos o escanear código..."
+- inputText: "Arroz"
+- assertVisible: "Resultados sugeridos"
+- tapOn: "Arroz Premium La Garza"
+- tapOn: "X" # Limpia el buscador
+- inputText: "Pollo Entero"
+- tapOn: "Pollo Entero Fresco"
+- tapOn: "X"
+
+# Smoke Test 3: Comparación (Flujo Crítico)
+- tapOn: "Comparar"
+- tapOn: "Ir a pantalla de Comparación"
+- assertVisible: "Jumbo"
+- assertVisible: "RD$"
+
+# Smoke Test 4: Verificación de Presupuesto Real
+- tapOn:
+    id: "tab-bar-budget" # Requiere asegurar que el BottomTab tenga IDs
+- assertVisible: "Presupuesto Inteligente"
+- assertVisible: "RD$ 0" # Valida ausencia de mock 8500
+- assertVisible: "Te quedan"

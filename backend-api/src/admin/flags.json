@@ -1,0 +1,7 @@
+{
+  "ocrEnabled": true,
+  "aiEnabled": true,
+  "supermarketsEnabled": true,
+  "offersEnabled": true,
+  "debugMode": false
+}

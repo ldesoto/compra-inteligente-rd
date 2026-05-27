@@ -1,0 +1,229 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ----------------------------------------------------
+// 1. USUARIOS Y PERFILES (Incluyendo Presupuestos)
+// ----------------------------------------------------
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  password       String?  // Optional for OAuth
+  name           String?
+  avatarUrl      String?
+  // Preferencias financieras y de nutrición guardadas como String (JSON stringified)
+  preferences    String?  @default("{}") 
+  
+  // Presupuesto global mensual
+  monthlyBudget  Float?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relaciones
+  ownedLists     ShoppingList[]  @relation("ListOwner")
+  collaborations ListCollaborator[]
+  budgets        CategoryBudget[]
+  receipts       Receipt[]
+  alerts         Alert[]
+}
+
+model CategoryBudget {
+  id         String   @id @default(uuid())
+  userId     String
+  categoryId String
+  amount     Float
+  
+  user       User     @relation(fields: [userId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([userId, categoryId])
+}
+
+// ----------------------------------------------------
+// 2. SUPERMERCADOS Y SUCURSALES (Contexto Espacial)
+// ----------------------------------------------------
+
+model Supermarket {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  logoUrl  String?
+  website  String?
+  isActive Boolean @default(true)
+
+  stores         Store[]
+  productMatches ProductMatch[]
+}
+
+model Store {
+  id             String      @id @default(uuid())
+  supermarketId  String
+  name           String
+  
+  // Coordenadas
+  latitude       Float?
+  longitude      Float?
+  address        String?
+
+  supermarket    Supermarket @relation(fields: [supermarketId], references: [id])
+}
+
+// ----------------------------------------------------
+// 3. CATÁLOGO CANÓNICO (Inteligencia de Producto)
+// ----------------------------------------------------
+
+model Category {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  parentId String?
+
+  products CanonicalProduct[]
+  budgets  CategoryBudget[]
+}
+
+model CanonicalProduct {
+  id               String   @id @default(uuid())
+  name             String
+  categoryId       String?
+  
+  // Datos para sustituciones inteligentes
+  baseUnit         String?  // Ej: "litro", "onza", "kg"
+  baseWeight       Float?   // Cantidad en la unidad base
+  brand            String?
+  qualityTier      String?  // "PREMIUM", "STANDARD", "WHITE_LABEL"
+  
+  // Tags nutricionales separados por coma (ej: "Keto,Vegano")
+  tags             String? 
+  
+  defaultImageUrl  String?
+
+  category          Category?          @relation(fields: [categoryId], references: [id])
+  productMatches    ProductMatch[]
+  shoppingListItems ShoppingListItem[]
+  receiptItems      ReceiptItem[]
+}
+
+model ProductMatch {
+  id                 String   @id @default(uuid())
+  canonicalProductId String
+  supermarketId      String
+  rawName            String
+  rawUrl             String?
+  rawBarcode         String?
+
+  canonicalProduct   CanonicalProduct @relation(fields: [canonicalProductId], references: [id])
+  supermarket        Supermarket      @relation(fields: [supermarketId], references: [id])
+  priceHistory       PriceHistory[]
+}
+
+model PriceHistory {
+  id             String   @id @default(uuid())
+  productMatchId String
+  price          Float
+  currency       String   @default("DOP")
+  timestamp      DateTime @default(now())
+  
+  // Detección de Ofertas Falsas
+  isPromotion    Boolean  @default(false)
+  isFakeOffer    Boolean  @default(false)
+  
+  productMatch   ProductMatch @relation(fields: [productMatchId], references: [id])
+
+  @@index([productMatchId, timestamp])
+}
+
+// ----------------------------------------------------
+// 4. MODO FAMILIA Y LISTAS COLABORATIVAS
+// ----------------------------------------------------
+
+model ShoppingList {
+  id        String   @id @default(uuid())
+  ownerId   String
+  name      String
+  isShared  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner         User               @relation("ListOwner", fields: [ownerId], references: [id])
+  collaborators ListCollaborator[]
+  items         ShoppingListItem[]
+}
+
+model ListCollaborator {
+  id     String @id @default(uuid())
+  listId String
+  userId String
+  // Roles: "ADMIN", "EDITOR", "VIEWER"
+  role   String @default("EDITOR")
+
+  list ShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, userId])
+}
+
+model ShoppingListItem {
+  id                 String   @id @default(uuid())
+  listId             String
+  canonicalProductId String
+  quantity           Int      @default(1)
+  required           Boolean  @default(true)
+  
+  // Control de estado
+  isChecked          Boolean  @default(false)
+
+  shoppingList       ShoppingList     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  canonicalProduct   CanonicalProduct @relation(fields: [canonicalProductId], references: [id])
+}
+
+// ----------------------------------------------------
+// 5. OCR Y TICKETS DE COMPRA (Inflación Personal)
+// ----------------------------------------------------
+
+model Receipt {
+  id             String   @id @default(uuid())
+  userId         String
+  storeId        String?  // Puede ser null si el OCR no detectó bien la sucursal
+  scannedAt      DateTime @default(now())
+  totalAmount    Float
+  receiptImgUrl  String?
+  
+  user           User      @relation(fields: [userId], references: [id])
+  items          ReceiptItem[]
+}
+
+model ReceiptItem {
+  id                 String   @id @default(uuid())
+  receiptId          String
+  canonicalProductId String?  // Referencia inteligente al catálogo
+  rawScannedName     String
+  quantity           Float    @default(1)
+  unitPrice          Float
+  totalPrice         Float
+
+  receipt            Receipt           @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  canonicalProduct   CanonicalProduct? @relation(fields: [canonicalProductId], references: [id])
+}
+
+// ----------------------------------------------------
+// 6. SISTEMA DE ALERTAS INTELIGENTES
+// ----------------------------------------------------
+
+model Alert {
+  id          String    @id @default(uuid())
+  userId      String
+  // Tipos: "PRICE_DROP", "PRICE_SPIKE", "BUDGET_WARNING", "FAKE_OFFER", "AI_SUGGESTION"
+  type        String
+  title       String
+  message     String
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id])
+}
