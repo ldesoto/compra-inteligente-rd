@@ -4,21 +4,24 @@ import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAppStore } from '../store/useAppStore';
+
 export const BottomTabBar = () => {
   const navigation = useNavigation<any>();
   const route = useRoute();
   const insets = useSafeAreaInsets();
+  const { darkMode, language } = useAppStore();
 
   const tabs = [
-    { name: 'Home',       icon: 'tag',          label: 'Explorar' },
-    { name: 'Alerts',     icon: 'dollar-sign',  label: 'Ahorros'  },
-    { name: 'Scanner',    icon: 'camera',       label: 'Escanear' },
-    { name: 'Search',     icon: 'search',       label: 'Buscar'   },
-    { name: 'CreateList', icon: 'list',         label: 'Listas'   },
+    { name: 'Home',            icon: 'home',         label: language === 'Inglés' ? 'Home' : 'Inicio' },
+    { name: 'Search',          icon: 'search',       label: language === 'Inglés' ? 'Compare' : 'Comparar' },
+    { name: 'CreateList',      icon: 'list',         label: language === 'Inglés' ? 'Lists' : 'Listas' },
+    { name: 'Alerts',          icon: 'tag',          label: language === 'Inglés' ? 'Offers' : 'Ofertas' },
+    { name: 'BudgetDashboard', icon: 'pie-chart',    label: language === 'Inglés' ? 'Savings' : 'Ahorros' },
   ];
 
   return (
-    <View style={[styles.container, { paddingBottom: 12 }]}>
+    <View style={[styles.container, { paddingBottom: 12, backgroundColor: darkMode ? '#1E293B' : '#FFFFFF', borderTopColor: darkMode ? '#334155' : '#F1F5F9' }]}>
       {tabs.map((tab) => {
         const isActive =
           route.name === tab.name ||
@@ -34,9 +37,9 @@ export const BottomTabBar = () => {
             <Feather
               name={tab.icon as any}
               size={22}
-              color={isActive ? '#00B2A9' : '#94A3B8'}
+              color={isActive ? '#00B2A9' : (darkMode ? '#64748B' : '#94A3B8')}
             />
-            <Text style={[styles.label, isActive && styles.activeLabel]}>
+            <Text style={[styles.label, { color: darkMode ? '#94A3B8' : '#94A3B8' }, isActive && styles.activeLabel]}>
               {tab.label}
             </Text>
           </TouchableOpacity>

@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BottomTabBar } from '../components/BottomTabBar';
 
 export const ListDetailScreen = ({ navigation }: any) => {
-  const { currentList, comparisonResult, compareCurrentList, updateItemQuantity, addItem, searchProducts } = useAppStore();
+  const { currentList, comparisonResult, compareCurrentList, updateItemQuantity, addItem, searchProducts, darkMode, language } = useAppStore();
   const [activeTab, setActiveTab] = useState('Productos');
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,8 +54,31 @@ export const ListDetailScreen = ({ navigation }: any) => {
   const bestOption = comparisonResult?.bestOptionName || 'Calculando...';
   const bestPrice = comparisonResult?.comparison[0]?.totalCost || 0;
   
+  const t = {
+    tabs: language === 'Inglés' ? ['Summary', 'Products', 'Compare'] : ['Resumen', 'Productos', 'Comparar'],
+    searchPlaceholder: language === 'Inglés' ? 'Search products or scan barcode...' : 'Buscar productos o escanear código...',
+    suggestAI: language === 'Inglés' ? 'Suggest products with AI' : 'Sugerir productos con IA',
+    defaultTitle: language === 'Inglés' ? 'My Weekly Groceries' : 'Mi Compra Semanal'
+  };
+
+  const theme = {
+    bg: darkMode ? '#0F172A' : '#FFFFFF',
+    text: darkMode ? '#F8FAFC' : '#0F172A',
+    card: darkMode ? '#1E293B' : '#FFFFFF',
+    border: darkMode ? '#334155' : '#F1F5F9',
+    muted: darkMode ? '#94A3B8' : '#64748B'
+  };
+
+  // Convert English tab back to standard for internal state
+  const displayToKey = (displayTab: string) => {
+    if (displayTab === 'Summary') return 'Resumen';
+    if (displayTab === 'Products') return 'Productos';
+    if (displayTab === 'Compare') return 'Comparar';
+    return displayTab;
+  };
+  
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]} edges={['top', 'left', 'right', 'bottom']}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
@@ -81,7 +104,7 @@ export const ListDetailScreen = ({ navigation }: any) => {
             }}
           />
         ) : (
-          <Text style={styles.title} numberOfLines={1}>{currentList?.name || 'Mi Compra Semanal'}</Text>
+          <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>{currentList?.name || t.defaultTitle}</Text>
         )}
         <View style={styles.headerRight}>
           <TouchableOpacity 
@@ -113,22 +136,25 @@ export const ListDetailScreen = ({ navigation }: any) => {
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabsRow}>
-        {['Resumen', 'Productos', 'Comparar'].map(tab => (
-          <TouchableOpacity 
-            key={tab} 
-            style={[styles.tab, activeTab === tab && styles.activeTab]}
-            onPress={() => {
-              if (tab === 'Comparar') {
-                navigation.navigate('Comparison');
-              } else {
-                setActiveTab(tab);
-              }
-            }}
-          >
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
-          </TouchableOpacity>
-        ))}
+      <View style={[styles.tabsRow, { borderBottomColor: theme.border }]}>
+        {t.tabs.map(displayTab => {
+          const internalTab = displayToKey(displayTab);
+          return (
+            <TouchableOpacity 
+              key={internalTab} 
+              style={[styles.tab, activeTab === internalTab && styles.activeTab]}
+              onPress={() => {
+                if (internalTab === 'Comparar') {
+                  navigation.navigate('Comparison');
+                } else {
+                  setActiveTab(internalTab);
+                }
+              }}
+            >
+              <Text style={[styles.tabText, { color: theme.muted }, activeTab === internalTab && styles.activeTabText]}>{displayTab}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {activeTab === 'Resumen' && (
@@ -322,24 +348,24 @@ export const ListDetailScreen = ({ navigation }: any) => {
       )}
 
       {activeTab === 'Productos' && (
-        <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
-          <View style={styles.searchBoxContainer}>
-            <View style={styles.searchBox}>
-              <Feather name="search" size={20} color="#64748B" style={styles.searchIcon} />
+        <View style={{ flex: 1, backgroundColor: theme.bg }}>
+          <View style={[styles.searchBoxContainer, { backgroundColor: theme.bg }]}>
+            <View style={[styles.searchBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <Feather name="search" size={20} color={theme.muted} style={styles.searchIcon} />
               <TextInput 
-                placeholder="Buscar productos o escanear código..."
-                placeholderTextColor="#94A3B8"
-                style={styles.searchInput}
+                placeholder={t.searchPlaceholder}
+                placeholderTextColor={theme.muted}
+                style={[styles.searchInput, { color: theme.text }]}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
               {searchQuery.length > 0 ? (
                 <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.barcodeBtn}>
-                  <Feather name="x" size={20} color="#64748B" />
+                  <Feather name="x" size={20} color={theme.muted} />
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity style={styles.barcodeBtn}>
-                  <Ionicons name="barcode-outline" size={20} color="#0F172A" />
+                  <Ionicons name="barcode-outline" size={20} color={theme.text} />
                 </TouchableOpacity>
               )}
             </View>
@@ -362,13 +388,13 @@ export const ListDetailScreen = ({ navigation }: any) => {
             )}
 
             {searchQuery.length === 0 && currentList?.items?.map(item => (
-              <View key={item.id} style={styles.productCard}>
-                <View style={styles.productIconBox}>
+              <View key={item.id} style={[styles.productCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <View style={[styles.productIconBox, darkMode && { backgroundColor: '#064E3B' }]}>
                   <Ionicons name="cube-outline" size={24} color="#16A34A" />
                 </View>
                 <View style={[styles.productInfo, { minWidth: 0 }]}>
-                  <Text style={styles.productName}>{item.name}</Text>
-                  <Text style={styles.productUnit}>{item.unit}</Text>
+                  <Text style={[styles.productName, { color: theme.text }]}>{item.name}</Text>
+                  <Text style={[styles.productUnit, { color: theme.muted }]}>{item.unit}</Text>
                 </View>
                 
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -449,9 +475,9 @@ export const ListDetailScreen = ({ navigation }: any) => {
             
             {/* Botón flotante para sugerencias IA */}
             <TouchableOpacity style={styles.aiSuggestBtn} onPress={() => navigation.navigate('AiAssistant')}>
-              <LinearGradient colors={['#F0FDF4', '#DCFCE7']} style={styles.aiSuggestGradient}>
-                <Ionicons name="sparkles" size={18} color="#16A34A" />
-                <Text style={styles.aiSuggestText}>Sugerir productos con IA</Text>
+              <LinearGradient colors={darkMode ? ['#064E3B', '#16A34A'] : ['#F0FDF4', '#DCFCE7']} style={styles.aiSuggestGradient}>
+                <Ionicons name="sparkles" size={18} color={darkMode ? '#DCFCE7' : '#16A34A'} />
+                <Text style={[styles.aiSuggestText, darkMode && { color: '#DCFCE7' }]}>{t.suggestAI}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </ScrollView>

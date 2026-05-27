@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: comprix-backend
+    env: node
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_VERSION
+        value: 18.20.7
+      - key: DATABASE_URL
+        value: file:/data/dev.db
+    disk:
+      name: sqlite-data
+      mountPath: /data
+      sizeGB: 1

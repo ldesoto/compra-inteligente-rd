@@ -103,8 +103,17 @@ export interface AppState {
 
   // Savings & Dashboard Data
   monthlySavings: number;
+  promotions: any[];
   offers: any[];
   isLoadingDashboard: boolean;
+
+  // Settings
+  darkMode: boolean;
+  language: string;
+  isPremium: boolean;
+  subscriptionStatus: 'active' | 'trialing' | 'past_due' | 'canceled' | 'none';
+  setDarkMode: (value: boolean) => void;
+  setLanguage: (value: string) => void;
 
   // Actions
   fetchLists: () => Promise<void>;
@@ -163,8 +172,17 @@ export const useAppStore = create<AppState>((set, get) => ({
   token: null,
   alerts: [],
   monthlySavings: 0,
+  promotions: [],
   offers: [],
   isLoadingDashboard: false,
+  
+  // Settings
+  darkMode: false,
+  language: 'Español',
+  isPremium: false,
+  subscriptionStatus: 'none',
+  setDarkMode: (value: boolean) => { /* Disabled */ },
+  setLanguage: (value: string) => { /* Disabled */ },
 
   // ─── AUTH ───────────────────────────────────────────────────────────────────
 
@@ -272,14 +290,20 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ isLoadingDashboard: true });
     try {
       const userId = get().user?.id || 'test-user-id';
-      const response = await api.get(`/budgets/dashboard?userId=${userId}`);
+      
+      const [dashboardRes, promoRes] = await Promise.all([
+        api.get(`/budgets/dashboard?userId=${userId}`).catch(() => ({ data: { monthlySavings: 0, offers: [] } })),
+        api.get(`/promotions`).catch(() => ({ data: [] }))
+      ]);
+
       set({ 
-        monthlySavings: response.data.monthlySavings || 0,
-        offers: response.data.offers || [],
+        monthlySavings: dashboardRes.data.monthlySavings || 0,
+        offers: dashboardRes.data.offers || [],
+        promotions: promoRes.data || [],
         isLoadingDashboard: false
       });
     } catch (error) {
-      set({ monthlySavings: 0, offers: [], isLoadingDashboard: false });
+      set({ monthlySavings: 0, offers: [], promotions: [], isLoadingDashboard: false });
     }
   },
 
@@ -596,9 +620,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const response = await api.get(`/budgets/analyze?userId=${userId}&listId=${listId}`);
       return response.data;
-    } catch (err) {
-      console.error('Budget API Error:', err);
-      throw err;
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        // La lista podría no estar sincronizada aún o no existir en BD
+        return { monthlyBudget: 0, totalEstimatedCost: 0, alerts: [], categorySpending: {} };
+      }
+      console.warn('Budget API Error:', err.message);
+      return { monthlyBudget: 0, totalEstimatedCost: 0, alerts: [], categorySpending: {} };
     }
   },
 

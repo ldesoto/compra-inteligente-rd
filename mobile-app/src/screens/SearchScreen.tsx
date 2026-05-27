@@ -52,7 +52,7 @@ export const SearchScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Feather name="chevron-left" size={24} color="#1F2937" />
+          <Feather name="chevron-left" size={24} color="#00B2A9" />
         </TouchableOpacity>
         <Text style={styles.title}>Buscar Productos</Text>
       </View>
@@ -74,59 +74,61 @@ export const SearchScreen = ({ navigation }: any) => {
         )}
       </View>
 
-      {query.length < 2 ? (
-        <View style={styles.categoriesSection}>
-          <Text style={styles.sectionTitle}>Categorías Populares</Text>
-          <View style={styles.categoriesGrid}>
-            {popularCategories.map((cat, i) => (
-              <TouchableOpacity key={i} style={styles.categoryCard} onPress={() => setQuery(cat.name)}>
-                <View style={styles.categoryIconBg}>
-                  <Feather name={cat.icon} size={20} color="#059669" />
-                </View>
-                <Text style={styles.categoryName}>{cat.name}</Text>
-              </TouchableOpacity>
-            ))}
+      <View style={{ flex: 1 }}>
+        {query.length < 2 ? (
+          <View style={styles.categoriesSection}>
+            <Text style={styles.sectionTitle}>Categorías Populares</Text>
+            <View style={styles.categoriesGrid}>
+              {popularCategories.map((cat, i) => (
+                <TouchableOpacity key={i} style={styles.categoryCard} onPress={() => setQuery(cat.name)}>
+                  <View style={styles.categoryIconBg}>
+                    <Feather name={cat.icon} size={20} color="#059669" />
+                  </View>
+                  <Text style={styles.categoryName}>{cat.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
-      ) : isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#059669" />
-          <Text style={styles.loadingText}>Buscando en el catálogo...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={results}
-          keyExtractor={item => item.id}
-          contentContainerStyle={{ padding: 20, paddingTop: 8 }}
-          renderItem={({ item }) => (
-            <View style={styles.resultCard}>
-              <View style={styles.resultIconBg}>
-                <Feather name="package" size={22} color="#059669" />
+        ) : isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#059669" />
+            <Text style={styles.loadingText}>Buscando en el catálogo...</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={results}
+            keyExtractor={item => item.id}
+            contentContainerStyle={{ padding: 20, paddingTop: 8 }}
+            renderItem={({ item }) => (
+              <View style={styles.resultCard}>
+                <View style={styles.resultIconBg}>
+                  <Feather name="package" size={22} color="#059669" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 14 }}>
+                  <Text style={styles.resultName} numberOfLines={2}>{item.name}</Text>
+                  {item.price ? (
+                    <Text style={styles.resultPrice}>Desde RD$ {item.price.toFixed(2)}</Text>
+                  ) : (
+                    <Text style={styles.resultPriceNA}>Precio no disponible</Text>
+                  )}
+                </View>
+                <TouchableOpacity style={styles.resultAction} onPress={() => navigation.navigate('PriceHistory', { productId: item.id, productName: item.name })}>
+                  <Feather name="chevron-right" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
               </View>
-              <View style={{ flex: 1, marginLeft: 14 }}>
-                <Text style={styles.resultName} numberOfLines={2}>{item.name}</Text>
-                {item.price ? (
-                  <Text style={styles.resultPrice}>Desde RD$ {item.price.toFixed(2)}</Text>
-                ) : (
-                  <Text style={styles.resultPriceNA}>Precio no disponible</Text>
-                )}
+            )}
+            ListEmptyComponent={
+              <View style={styles.emptySearch}>
+                <View style={styles.emptyIconBg}>
+                  <Feather name="search" size={32} color="#D1D5DB" />
+                </View>
+                <Text style={styles.emptyTitle}>Sin resultados</Text>
+                <Text style={styles.emptyText}>No encontramos "{query}" en el catálogo. Intenta con otro término.</Text>
               </View>
-              <TouchableOpacity style={styles.resultAction} onPress={() => navigation.navigate('PriceHistory', { productId: item.id, productName: item.name })}>
-                <Feather name="chevron-right" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
-            </View>
-          )}
-          ListEmptyComponent={
-            <View style={styles.emptySearch}>
-              <View style={styles.emptyIconBg}>
-                <Feather name="search" size={32} color="#D1D5DB" />
-              </View>
-              <Text style={styles.emptyTitle}>Sin resultados</Text>
-              <Text style={styles.emptyText}>No encontramos "{query}" en el catálogo. Intenta con otro término.</Text>
-            </View>
-          }
-        />
-      )}
+            }
+          />
+        )}
+      </View>
       <BottomTabBar />
     </SafeAreaView>
   );
@@ -135,8 +137,8 @@ export const SearchScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FAFAFA' },
   header: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingTop: 40, gap: 12 },
-  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  title: { fontSize: 22, fontWeight: '800', color: '#111827', letterSpacing: -0.5 },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#E6F8F7', justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: 24, fontWeight: '800', color: '#00B2A9', letterSpacing: -0.5 },
 
   searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 16, marginHorizontal: 20, paddingHorizontal: 16, height: 56, borderWidth: 1, borderColor: '#F3F4F6', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 2 },
   searchInput: { flex: 1, fontSize: 16, color: '#111827', fontWeight: '500' },

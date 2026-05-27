@@ -17,6 +17,7 @@ import BudgetDashboardScreen from './src/screens/BudgetDashboardScreen';
 import { InflationDashboardScreen } from './src/screens/InflationDashboardScreen';
 import AiAssistantScreen from './src/screens/AiAssistantScreen';
 import { AdminScreen } from './src/screens/AdminScreen';
+import PremiumScreen from './src/screens/PremiumScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -48,6 +49,7 @@ export default function App() {
           <Stack.Screen name="InflationDashboard" component={InflationDashboardScreen} />
           <Stack.Screen name="AiAssistant" component={AiAssistantScreen} />
           <Stack.Screen name="Admin" component={AdminScreen} />
+          <Stack.Screen name="Premium" component={PremiumScreen} options={{ presentation: 'modal' }} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

@@ -26,17 +26,16 @@ export const CreateListScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Feather name="chevron-left" size={24} color="#00B2A9" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Mis Listas</Text>
+      </View>
       <FlatList
         contentContainerStyle={styles.scroll}
         ListHeaderComponent={() => (
           <>
-            <View style={styles.header}>
-              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                <Feather name="chevron-left" size={24} color="#1F2937" />
-              </TouchableOpacity>
-              <Text style={styles.title}>Mis Listas</Text>
-            </View>
-
             {/* Create New */}
             <TouchableOpacity activeOpacity={0.85} onPress={handleCreateNew} style={styles.createBtn}>
               <Feather name="plus" size={20} color="#FFF" />
@@ -102,10 +101,10 @@ export const CreateListScreen = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FAFAFA' },
-  scroll: { padding: 20, paddingTop: 40 },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 28, gap: 12 },
-  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  title: { fontSize: 22, fontWeight: '800', color: '#111827', letterSpacing: -0.5 },
+  scroll: { padding: 20, paddingTop: 10 },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingTop: 20, gap: 12 },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#E6F8F7', justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: 24, fontWeight: '800', color: '#00B2A9', letterSpacing: -0.5 },
   createBtn: { flexDirection: 'row', backgroundColor: '#059669', borderRadius: 16, paddingVertical: 18, alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 36, shadowColor: '#059669', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
   createBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700', marginLeft: 8 },
   aiBox: {

@@ -234,7 +234,165 @@ export class ScraperService {
 
   constructor(private prisma: PrismaService) {}
 
+  private cachedPromotions: any[] = [
+    { id: 1, store: 'Jumbo', letter: 'J', color: '#FF8200', title: 'Hasta 40%', sub: 'Ahorro en frutas\ny vegetales', badge: 'Precios actualizados', badgeColor: '#16A34A', badgeBg: '#DCFCE7', icon: 'arrow-up', emoji: '🍅🥬' },
+    { id: 2, store: 'La Sirena', letter: 'S', color: '#EF4444', title: 'Feria de\nLimpieza', sub: 'Detergentes y\njabón', badge: 'Termina hoy', badgeColor: '#EF4444', badgeBg: '#FEE2E2', icon: 'clock', emoji: '🧴🧼' },
+    { id: 3, store: 'Nacional', letter: 'N', color: '#008B47', title: 'Especial de\nCarnes', sub: 'Cortes seleccionados\na mejores precios', badge: 'Precios actualizados', badgeColor: '#16A34A', badgeBg: '#DCFCE7', icon: 'arrow-up', emoji: '🥩' },
+    { id: 4, store: 'Plaza Lama', letter: 'P', color: '#EAB308', title: 'Súper\nOfertas', sub: 'Miles de productos\ncon descuento', badge: 'Ofertas destacadas', badgeColor: '#D97706', badgeBg: '#FEF3C7', icon: 'star', emoji: '🛒' }
+  ];
+  private lastPromoFetch = 0;
+
   // ─── Public API ───────────────────────────────────────────────────────────
+
+  async getLivePromotions(): Promise<any[]> {
+    const now = Date.now();
+    // Cache for 6 hours
+    if (now - this.lastPromoFetch > 1000 * 60 * 60 * 6) {
+      this.lastPromoFetch = now;
+      // Scrape in background so we don't block the request
+      this.scrapeHomePromotions().catch(e => this.logger.error('Error scraping promos: ' + e.message));
+    }
+    return this.cachedPromotions;
+  }
+
+  private async scrapeHomePromotions(): Promise<void> {
+    this.logger.log('🕷️  Extrayendo promociones en vivo (productos en oferta)...');
+    if (!chromium) {
+      this.logger.error('Playwright no está instalado');
+      return;
+    }
+    const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    
+    try {
+      let [jumboPromo, sirenaPromo, naciPromo, plazaPromo] = [...this.cachedPromotions];
+
+      const filterGrocery = (products: any[]) => {
+        const blacklist = ['extractor', 'campana', 'estampa', 'album', 'fifa', 'juguete', 'bebedero', 'televisor', 'tv', 'smart', 'led', 'oled', 'laptop', 'computador', 'tablet', 'ipad', 'celular', 'smartphone', 'iphone', 'samsung', 'nevera', 'refrigerador', 'estufa', 'lavadora', 'secadora', 'microondas', 'aire', 'inverter', 'licuadora', 'batidora', 'freidora', 'tostadora', 'plancha', 'aspiradora', 'bocina', 'parlante', 'impresora', 'monitor', 'colchon', 'cama', 'sofa', 'mueble', 'silla', 'bicicleta', 'abanico', 'playstation', 'xbox', 'nintendo'];
+        return products.find(p => {
+          if (!p || !p.name) return false;
+          const name = p.name.toLowerCase();
+          return !blacklist.some(term => name.includes(term));
+        });
+      };
+
+      const getStyleAndEmoji = (name: string) => {
+        const n = name.toLowerCase();
+        if (n.includes('carne') || n.includes('pollo') || n.includes('res') || n.includes('cerdo') || n.includes('chuleta')) {
+          return { emoji: '🥩🍗', badge: 'Carnes', badgeColor: '#E11D48', badgeBg: '#FFE4E6' };
+        } else if (n.includes('arroz') || n.includes('habichuela') || n.includes('aceite') || n.includes('azucar') || n.includes('sal') || n.includes('pasta')) {
+          return { emoji: '🍚🌾', badge: 'Canasta Básica', badgeColor: '#D97706', badgeBg: '#FEF3C7' };
+        } else if (n.includes('leche') || n.includes('queso') || n.includes('yogur') || n.includes('mantequilla')) {
+          return { emoji: '🥛🧀', badge: 'Lácteos', badgeColor: '#2563EB', badgeBg: '#DBEAFE' };
+        } else if (n.includes('jabon') || n.includes('detergente') || n.includes('suavizante') || n.includes('cloro') || n.includes('limpiador') || n.includes('papel')) {
+          return { emoji: '🧼🧴', badge: 'Limpieza', badgeColor: '#059669', badgeBg: '#D1FAE5' };
+        } else if (n.includes('fruta') || n.includes('vegetal') || n.includes('manzana') || n.includes('platano') || n.includes('cebolla') || n.includes('ajo') || n.includes('papa')) {
+          return { emoji: '🍎🥬', badge: 'Frescos', badgeColor: '#16A34A', badgeBg: '#DCFCE7' };
+        } else if (n.includes('cerveza') || n.includes('vino') || n.includes('ron') || n.includes('refresco') || n.includes('jugo') || n.includes('agua')) {
+          return { emoji: '🍻🍹', badge: 'Bebidas', badgeColor: '#9333EA', badgeBg: '#F3E8FF' };
+        } else if (n.includes('galleta') || n.includes('cereal') || n.includes('pan') || n.includes('bizcocho')) {
+          return { emoji: '🥐🍪', badge: 'Snacks', badgeColor: '#CA8A04', badgeBg: '#FEF08A' };
+        }
+        return { emoji: '🛒🏷️', badge: 'Oferta Especial', badgeColor: '#0EA5E9', badgeBg: '#E0F2FE' };
+      };
+
+      // 1. Jumbo Ofertas (Solo Supermercado)
+      try {
+        const page = await browser.newPage();
+        await page.goto('https://jumbo.com.do/supermercado.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
+        const products = await page.evaluate(() => {
+          const els = Array.from(document.querySelectorAll('.product-item-info'));
+          return els.map(el => ({
+            name: el.querySelector('.product-item-link')?.textContent?.trim(),
+            price: el.querySelector('.price')?.textContent?.trim()
+          }));
+        });
+        const product = filterGrocery(products || []);
+        if (product && product.name) {
+           const style = getStyleAndEmoji(product.name);
+           jumboPromo = { ...jumboPromo, ...style, title: 'Oferta de Súper', sub: `${product.name}\n${product.price || ''}` };
+        }
+        await page.close();
+      } catch (e: any) { this.logger.error('Error Jumbo: ' + e.message); }
+
+      // 2. Sirena Ofertas (Solo Supermercado)
+      try {
+        const page = await browser.newPage();
+        await page.goto('https://sirena.do/supermercado', { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(3000);
+        const products = await page.evaluate(() => {
+          const els = Array.from(document.querySelectorAll('.vtex-product-summary-2-x-container'));
+          return els.map(el => ({
+            name: el.querySelector('.vtex-product-summary-2-x-brandName')?.textContent?.trim(),
+            price: el.querySelector('.vtex-product-price-1-x-sellingPriceValue')?.textContent?.trim()
+          }));
+        });
+        const product = filterGrocery(products || []);
+        if (product && product.name) {
+          const style = getStyleAndEmoji(product.name);
+          sirenaPromo = { ...sirenaPromo, ...style, title: 'Destacado Hoy', sub: `${product.name}\n${product.price || ''}` };
+        }
+        await page.close();
+      } catch (e: any) { this.logger.error('Error Sirena: ' + e.message); }
+
+      // 3. Nacional Ofertas
+      try {
+        const page = await browser.newPage();
+        await page.goto('https://supermercadosnacional.com/ofertas', { waitUntil: 'domcontentloaded', timeout: 30000 });
+        const products = await page.evaluate(() => {
+          const els = Array.from(document.querySelectorAll('.product-item-info'));
+          return els.map(el => ({
+            name: el.querySelector('.product-item-link')?.textContent?.trim(),
+            price: el.querySelector('.price')?.textContent?.trim()
+          }));
+        });
+        const product = filterGrocery(products || []);
+        if (product && product.name) {
+          const style = getStyleAndEmoji(product.name);
+          naciPromo = { ...naciPromo, ...style, title: 'Súper Especial', sub: `${product.name}\n${product.price || ''}` };
+        }
+        await page.close();
+      } catch (e: any) { this.logger.error('Error Nacional: ' + e.message); }
+
+      // 4. Plaza Lama Ofertas (Solo Supermercado)
+      try {
+        const page = await browser.newPage();
+        // Usar networkidle para asegurar que VTEX cargue el JS y los productos
+        await page.goto('https://plazalama.com.do/ca/supermercado/11', { waitUntil: 'networkidle', timeout: 30000 });
+        await page.waitForTimeout(5000); // 5 segundos extras para hidratación
+        const products = await page.evaluate(() => {
+          // Buscamos cualquier elemento que parezca un producto (VTEX o estándar)
+          const els = Array.from(document.querySelectorAll('.vtex-product-summary-2-x-container, .vtex-search-result-3-x-galleryItem, .product-item, .card'));
+          return els.map(el => {
+            const nameEl = el.querySelector('.vtex-product-summary-2-x-productNameContainer, .vtex-product-summary-2-x-brandName, .product-item-name, h2, h3, .vtex-store-components-3-x-productBrand');
+            const priceEl = el.querySelector('.vtex-product-price-1-x-sellingPrice, .vtex-product-price-1-x-sellingPriceValue, .price, .money');
+            return { name: nameEl?.textContent?.trim(), price: priceEl?.textContent?.trim() };
+          });
+        });
+        
+        let product = filterGrocery(products || []);
+        
+        if (product && product.name && product.name.length > 3) {
+          const style = getStyleAndEmoji(product.name);
+          let cleanName = product.name.replace(/\n/g, ' ').substring(0, 45);
+          plazaPromo = { ...plazaPromo, ...style, title: 'Especial Provisión', sub: `${cleanName}\n${product.price || ''}` };
+        } else {
+          throw new Error('Bloqueo anti-bot de VTEX o tiempo de espera agotado. Se mantendrán los datos en caché para Plaza Lama.');
+        }
+        await page.close();
+      } catch (e: any) { this.logger.error('Error Plaza Lama: ' + e.message); }
+
+      this.cachedPromotions = [jumboPromo, sirenaPromo, naciPromo, plazaPromo];
+      this.logger.log('✅ Banners promocionales actualizados desde páginas reales.');
+    } finally {
+      await browser.close();
+    }
+  }
+
+  async forceScrapePromotions(): Promise<any[]> {
+    await this.scrapeHomePromotions();
+    this.lastPromoFetch = Date.now();
+    return this.cachedPromotions;
+  }
 
   async runDailyScraping(): Promise<{ success: boolean; productsScraped: number; errors: string[] }> {
     this.logger.log('🕷️  Iniciando scraping diario completo de supermercados...');

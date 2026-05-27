@@ -37,11 +37,10 @@ export const InflationDashboardScreen = ({ navigation }: any) => {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color="#0F172A" />
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="#00B2A9" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Tu Inflación</Text>
-          <View style={styles.menuButton} />
+          <Text style={styles.title}>Tu Inflación</Text>
         </View>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <Feather name="bar-chart-2" size={64} color="#CBD5E1" />
@@ -59,13 +58,10 @@ export const InflationDashboardScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#0F172A" />
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={24} color="#00B2A9" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Inflación Personal</Text>
-        <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="filter" size={20} color="#0F172A" />
-        </TouchableOpacity>
+        <Text style={styles.title}>Inflación Personal</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -133,10 +129,9 @@ export const InflationDashboardScreen = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC' },
-  header: { padding: 24, paddingTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: '#0F172A' },
-  backButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  menuButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingTop: 20, gap: 12 },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#E6F8F7', justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: 24, fontWeight: '800', color: '#00B2A9', letterSpacing: -0.5 },
   content: { padding: 20 },
   cardSubtitle: { color: '#64748B', fontSize: 12, fontWeight: '700', letterSpacing: 1, marginBottom: 8 },
   

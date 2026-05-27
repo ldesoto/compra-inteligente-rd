@@ -62,11 +62,10 @@ export default function BudgetDashboardScreen({ navigation }: any) {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#0F172A" />
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={24} color="#00B2A9" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Presupuesto Inteligente</Text>
-        <View style={styles.menuButton} />
+        <Text style={styles.title}>Presupuesto Inteligente</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -136,10 +135,9 @@ export default function BudgetDashboardScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC' },
-  header: { padding: 24, paddingTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: '#0F172A', marginBottom: 4 },
-  backButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  menuButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingTop: 20, gap: 12 },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#E6F8F7', justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: 24, fontWeight: '800', color: '#00B2A9', letterSpacing: -0.5 },
   content: { padding: 20 },
   cardSubtitle: { color: '#64748B', fontSize: 12, fontWeight: '600', letterSpacing: 1, marginBottom: 8 },
   amountRow: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 20 },
@@ -148,16 +146,16 @@ const styles = StyleSheet.create({
   remainingText: { color: '#10B981', fontSize: 14, fontWeight: '500' },
 
   globalCard: { 
-    marginHorizontal: 0, backgroundColor: '#FFFFFF', borderRadius: 24, padding: 24, marginBottom: 24,
-    borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 16, elevation: 4
+    marginHorizontal: 0, backgroundColor: '#FFFFFF', borderRadius: 32, padding: 24, marginBottom: 24,
+    borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#00B2A9', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.15, shadowRadius: 24, elevation: 6
   },
-  progressBarBg: { height: 12, backgroundColor: '#F1F5F9', borderRadius: 6, overflow: 'hidden', marginBottom: 12 },
-  progressBarFill: { height: '100%', backgroundColor: '#16A34A', borderRadius: 6 },
+  progressBarBg: { height: 14, backgroundColor: '#F1F5F9', borderRadius: 7, overflow: 'hidden', marginBottom: 12 },
+  progressBarFill: { height: '100%', backgroundColor: '#16A34A', borderRadius: 7 },
 
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#0F172A', paddingHorizontal: 0, marginBottom: 16, marginTop: 10 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A', paddingHorizontal: 0, marginBottom: 16, marginTop: 10 },
   
   alertCard: { 
-    marginHorizontal: 0, backgroundColor: '#FFFBEB', borderRadius: 16, padding: 16, flexDirection: 'row', 
+    marginHorizontal: 0, backgroundColor: '#FFFBEB', borderRadius: 20, padding: 16, flexDirection: 'row', 
     marginBottom: 16, borderWidth: 1, borderColor: '#FEF3C7' 
   },
   alertIconBox: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FEF3C7', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
@@ -166,16 +164,17 @@ const styles = StyleSheet.create({
   alertDesc: { fontSize: 13, color: '#92400E', lineHeight: 18 },
 
   categoryRow: { 
-    marginHorizontal: 0, backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', 
-    marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9' 
+    marginHorizontal: 0, backgroundColor: '#FFFFFF', borderRadius: 24, padding: 16, flexDirection: 'row', alignItems: 'center', 
+    marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9',
+    shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2
   },
-  catIconBox: { width: 48, height: 48, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginRight: 16, backgroundColor: '#F8FAFC' },
+  catIconBox: { width: 52, height: 52, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: 16, backgroundColor: '#F8FAFC' },
   catInfo: { flex: 1 },
   catHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   catName: { fontSize: 16, fontWeight: '700', color: '#0F172A', marginBottom: 4 },
-  catSpent: { fontSize: 14, color: '#0F172A', fontWeight: '600' },
-  catTotal: { color: '#64748B', fontWeight: '400' },
-  catProgressBg: { height: 6, backgroundColor: '#F1F5F9', borderRadius: 3, overflow: 'hidden' },
-  catProgressFill: { height: '100%', borderRadius: 3 },
+  catSpent: { fontSize: 14, color: '#0F172A', fontWeight: '700' },
+  catTotal: { color: '#64748B', fontWeight: '500' },
+  catProgressBg: { height: 8, backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden' },
+  catProgressFill: { height: '100%', borderRadius: 4 },
   textDanger: { color: '#EF4444' }
 });

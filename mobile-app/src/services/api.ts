@@ -1,9 +1,8 @@
 import axios from 'axios';
 import { Platform, Alert } from 'react-native';
 
-const baseURL = Platform.OS === 'android'
-  ? 'http://10.0.0.39:3000'
-  : 'http://localhost:3000';
+// Utilizando la nueva IP local de la máquina (cambió la red)
+const baseURL = 'http://192.168.202.35:3000';
 
 const api = axios.create({
   baseURL,

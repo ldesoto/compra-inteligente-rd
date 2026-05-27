@@ -50,7 +50,7 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Feather name="chevron-left" size={24} color="#1F2937" />
+            <Feather name="chevron-left" size={24} color="#00B2A9" />
           </TouchableOpacity>
           <Text style={styles.title}>Historial de Precios</Text>
         </View>
@@ -67,7 +67,7 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Feather name="chevron-left" size={24} color="#1F2937" />
+            <Feather name="chevron-left" size={24} color="#00B2A9" />
           </TouchableOpacity>
           <Text style={styles.title}>Historial de Precios</Text>
         </View>
@@ -105,14 +105,13 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Feather name="chevron-left" size={24} color="#00B2A9" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Historial de Precios</Text>
+      </View>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Feather name="chevron-left" size={24} color="#1F2937" />
-          </TouchableOpacity>
-          <Text style={styles.title}>Historial de Precios</Text>
-        </View>
 
         {/* Hero */}
         <View style={styles.heroCard}>
@@ -276,12 +275,18 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
                         <Text style={{ fontSize: 14, fontWeight: '700', color: '#1E293B' }}>{sub.name}</Text>
                         <Text style={{ fontSize: 12, color: '#64748B' }}>{sub.brand}</Text>
                       </View>
-                      <View style={{ alignItems: 'flex-end' }}>
+                      <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
                         <Text style={{ fontSize: 14, fontWeight: '800', color: '#0F172A' }}>RD$ {sub.avgPrice}</Text>
                         <View style={{ backgroundColor: sub.score >= 100 ? '#D1FAE5' : '#FEF3C7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4 }}>
                           <Text style={{ fontSize: 10, fontWeight: '800', color: sub.score >= 100 ? '#059669' : '#D97706' }}>Score: {sub.score}</Text>
                         </View>
                       </View>
+                      <TouchableOpacity 
+                        onPress={() => openAddModal(sub.id, sub.name)}
+                        style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', alignSelf: 'center' }}
+                      >
+                        <Feather name="plus" size={18} color="#0F172A" />
+                      </TouchableOpacity>
                     </View>
                   ))}
                 </View>
@@ -298,10 +303,16 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
                         <Text style={{ fontSize: 14, fontWeight: '700', color: '#166534' }}>{sub.name}</Text>
                         <Text style={{ fontSize: 12, color: '#15803D' }}>{sub.brand}</Text>
                       </View>
-                      <View style={{ alignItems: 'flex-end' }}>
+                      <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
                         <Text style={{ fontSize: 14, fontWeight: '800', color: '#14532D' }}>RD$ {sub.avgPrice}</Text>
                         <Text style={{ fontSize: 11, color: '#16A34A', marginTop: 2 }}>Unidad: RD$ {sub.unitPrice}</Text>
                       </View>
+                      <TouchableOpacity 
+                        onPress={() => openAddModal(sub.id, sub.name)}
+                        style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#DCFCE7', justifyContent: 'center', alignItems: 'center', alignSelf: 'center' }}
+                      >
+                        <Feather name="plus" size={18} color="#166534" />
+                      </TouchableOpacity>
                     </View>
                   ))}
                 </View>
@@ -318,9 +329,15 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
                         <Text style={{ fontSize: 14, fontWeight: '700', color: '#6B21A8' }}>{sub.name}</Text>
                         <Text style={{ fontSize: 12, color: '#7E22CE' }}>{sub.brand}</Text>
                       </View>
-                      <View style={{ alignItems: 'flex-end' }}>
+                      <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
                         <Text style={{ fontSize: 14, fontWeight: '800', color: '#581C87' }}>RD$ {sub.avgPrice}</Text>
                       </View>
+                      <TouchableOpacity 
+                        onPress={() => openAddModal(sub.id, sub.name)}
+                        style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#F3E8FF', justifyContent: 'center', alignItems: 'center', alignSelf: 'center' }}
+                      >
+                        <Feather name="plus" size={18} color="#6B21A8" />
+                      </TouchableOpacity>
                     </View>
                   ))}
                 </View>
@@ -344,10 +361,10 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FAFAFA' },
-  scroll: { padding: 20, paddingTop: 40 },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 24, gap: 12 },
-  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  title: { fontSize: 22, fontWeight: '800', color: '#111827', letterSpacing: -0.5 },
+  scroll: { padding: 20, paddingTop: 10 },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingTop: 20, gap: 12 },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#E6F8F7', justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: 24, fontWeight: '800', color: '#00B2A9', letterSpacing: -0.5 },
   
   heroCard: { backgroundColor: '#EEF2FF', borderRadius: 24, padding: 24, marginBottom: 32, borderWidth: 1, borderColor: '#C7D2FE' },
   heroIconRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
@@ -364,6 +381,8 @@ const styles = StyleSheet.create({
   trendContainer: { alignItems: 'center', gap: 4 },
   trendBg: { width: 36, height: 36, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   trendText: { fontSize: 12, fontWeight: '800' },
+  addBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#E6F8F7', justifyContent: 'center', alignItems: 'center' },
+
   
   storesList: { gap: 10 },
   storeRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -378,7 +397,7 @@ const styles = StyleSheet.create({
   cheapestTagText: { fontSize: 11, color: '#059669', fontWeight: '800' },
   
   chartCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#F3F4F6', marginBottom: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.02, shadowRadius: 8, elevation: 1 },
-  chartLegend: { flexDirection: 'row', gap: 16, marginBottom: 20 },
+  chartLegend: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginBottom: 20 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
   legendText: { fontSize: 13, color: '#6B7280', fontWeight: '600' },

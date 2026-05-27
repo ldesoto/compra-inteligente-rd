@@ -20,6 +20,7 @@ export const LoginScreen = ({ navigation }: any) => {
   const [request, response, promptAsync] = Google.useAuthRequest({
     webClientId: '920387237410-t4eqmn2ubsiu9h8e9op17r6qkv0ebhlr.apps.googleusercontent.com',
     iosClientId: '920387237410-7hj05b8pe5lb99f6pqa8ovqqnc61s6t3.apps.googleusercontent.com',
+    androidClientId: '920387237410-t4eqmn2ubsiu9h8e9op17r6qkv0ebhlr.apps.googleusercontent.com', // Usando web client id provisionalmente o cámbialo por el tuyo de Android
   });
 
   // Reacción al token de Google
@@ -128,9 +129,8 @@ export const LoginScreen = ({ navigation }: any) => {
         <View style={styles.header}>
           <Image 
             source={require('../../assets/comprix-logo.png')} 
-            style={{ width: 180, height: 140, resizeMode: 'contain', marginBottom: -10 }} 
+            style={{ width: 320, height: 220, resizeMode: 'contain', marginBottom: 10 }} 
           />
-          <Text style={styles.tagline}>Compara precios. Ahorra dinero.{'\n'}Tu supermercado ideal en RD.</Text>
         </View>
 
         {/* Login Form */}
