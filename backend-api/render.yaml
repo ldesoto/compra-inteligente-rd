@@ -9,7 +9,3 @@ services:
         value: 18.20.7
       - key: DATABASE_URL
         value: file:/data/dev.db
-    disk:
-      name: sqlite-data
-      mountPath: /data
-      sizeGB: 1
