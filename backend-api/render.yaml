@@ -1,6 +1,7 @@
 services:
   - type: web
     name: comprix-backend
+    rootDir: backend-api
     env: node
     plan: free
     buildCommand: npm install && npx prisma generate && npm run build
