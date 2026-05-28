@@ -92,6 +92,7 @@ Instrucciones:
   async analyzeFakeOffers() {
     // Escanea el catálogo buscando productos que dicen estar en "oferta" pero su precio histórico revela que es mentira.
     const products = await this.prisma.productMatch.findMany({
+      take: 1000,
       include: {
         priceHistory: { orderBy: { timestamp: 'desc' }, take: 5 }
       }
@@ -121,6 +122,7 @@ Instrucciones:
   async getSmartOffers() {
     // Busca los productos con historial de precios para analizar cuáles son ofertas reales y cuáles no
     const matches = await this.prisma.productMatch.findMany({
+      take: 2000, // Limit to prevent OOM
       include: {
         canonicalProduct: { include: { category: true } },
         supermarket: true,
