@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Platform, Alert } from 'react-native';
 
 // Conexión al servidor de producción en Render
-const baseURL = 'http://10.0.0.43:3000'; // Apuntando al backend local para pruebas
+const baseURL = 'https://compra-inteligente-rd.onrender.com'; // Apuntando al backend en la nube
 
 const api = axios.create({
   baseURL,
