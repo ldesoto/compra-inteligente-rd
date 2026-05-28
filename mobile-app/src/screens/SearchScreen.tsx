@@ -13,11 +13,30 @@ interface ProductResult {
   category?: string;
 }
 
+const CategoryCard = ({ cat, onPress, onImageLoad }: { cat: any, onPress: () => void, onImageLoad: () => void }) => {
+  return (
+    <TouchableOpacity style={styles.categoryCard} onPress={onPress}>
+      <View style={[styles.categoryIconBg, { padding: 0, overflow: 'hidden' }]}>
+        <Image 
+          source={cat.image} 
+          style={{ width: '100%', height: '100%' }} 
+          onLoad={onImageLoad}
+        />
+      </View>
+      <Text style={styles.categoryName} numberOfLines={2}>{cat.name}</Text>
+    </TouchableOpacity>
+  );
+};
+
+// Variables globales para caché en memoria durante la sesión
+let hasPreloadedImages = false;
+
 export const SearchScreen = ({ navigation }: any) => {
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [results, setResults] = useState<ProductResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadedImagesCount, setLoadedImagesCount] = useState(hasPreloadedImages ? 14 : 0);
   const inputRef = useRef<TextInput>(null);
 
   const popularCategories = [
@@ -31,11 +50,18 @@ export const SearchScreen = ({ navigation }: any) => {
     { name: 'Panadería y Repostería', image: require('../../assets/categories/cat_panaderia.png') },
     { name: 'Cuidado Personal',      image: require('../../assets/categories/cat_cuidado.png') },
     { name: 'Limpieza del Hogar',    image: require('../../assets/categories/cat_limpieza.png') },
-    { name: 'Bebés',                 image: require('../../assets/categories/cat_bebes.png') },
+    { name: 'Bebés',                 image: require('../../assets/categories/cat_bebe.png') },
     { name: 'Congelados',            image: require('../../assets/categories/cat_congelados.png') },
     { name: 'Hogar y Cocina',        image: require('../../assets/categories/cat_hogar.png') },
     { name: 'Mascotas',              image: require('../../assets/categories/cat_mascotas.png') },
   ];
+
+  // Efecto para marcar como cacheadas una vez cargan todas
+  useEffect(() => {
+    if (loadedImagesCount >= popularCategories.length) {
+      hasPreloadedImages = true;
+    }
+  }, [loadedImagesCount]);
 
   useEffect(() => {
     if (!selectedCategory && query.trim().length < 2) {
@@ -84,6 +110,7 @@ export const SearchScreen = ({ navigation }: any) => {
   };
 
   const showCategories = !selectedCategory && query.length < 2;
+  const allImagesLoaded = loadedImagesCount >= popularCategories.length;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
@@ -133,15 +160,24 @@ export const SearchScreen = ({ navigation }: any) => {
         {showCategories ? (
           <ScrollView contentContainerStyle={styles.categoriesSection} showsVerticalScrollIndicator={false}>
             <Text style={styles.sectionTitle}>Categorías Populares</Text>
-            <View style={styles.categoriesGrid}>
-              {popularCategories.map((cat, i) => (
-                <TouchableOpacity key={i} style={styles.categoryCard} onPress={() => handleCategoryPress(cat.name)}>
-                  <View style={[styles.categoryIconBg, { padding: 0, overflow: 'hidden' }]}>
-                    <Image source={cat.image} style={{ width: '100%', height: '100%' }} />
-                  </View>
-                  <Text style={styles.categoryName} numberOfLines={2}>{cat.name}</Text>
-                </TouchableOpacity>
-              ))}
+            
+            <View style={{ position: 'relative', minHeight: 300 }}>
+              {!allImagesLoaded && (
+                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', zIndex: 10 }}>
+                  <ActivityIndicator size="small" color="#059669" />
+                </View>
+              )}
+
+              <View style={[styles.categoriesGrid, { opacity: allImagesLoaded ? 1 : 0 }]}>
+                {popularCategories.map((cat, i) => (
+                  <CategoryCard 
+                    key={i} 
+                    cat={cat} 
+                    onPress={() => handleCategoryPress(cat.name)} 
+                    onImageLoad={() => setLoadedImagesCount(prev => prev + 1)}
+                  />
+                ))}
+              </View>
             </View>
           </ScrollView>
         ) : isLoading ? (
