@@ -362,8 +362,11 @@ export const ComparisonScreen = ({ navigation }: any) => {
                       productNameRaw: item.productName || item.name
                     }));
 
+                    const currentListId = useAppStore.getState().currentList?.id;
+                    if (!currentListId) throw new Error('No hay una lista activa.');
+
                     await useAppStore.getState().markListAsPurchased(
-                      comparisonResult.listId, 
+                      currentListId, 
                       selectedStore.supermarketId || selectedStore.supermarketName, // fallback
                       selectedStore.totalCost,
                       mappedItems
