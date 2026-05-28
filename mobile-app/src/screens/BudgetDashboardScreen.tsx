@@ -8,7 +8,7 @@ import { PremiumCard } from '../components/PremiumCard';
 import { themeColors, themeLayout, themeShadows, themeTypography } from '../theme/DesignSystem';
 
 export default function BudgetDashboardScreen({ navigation }: any) {
-  const { fetchBudgetAnalysis, currentList, darkMode } = useAppStore();
+  const { fetchBudgetAnalysis, currentList, darkMode, budgetStats } = useAppStore();
   const colors = darkMode ? themeColors.dark : themeColors.light;
 
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export default function BudgetDashboardScreen({ navigation }: any) {
     loadData();
   }, [currentList]);
 
-  if (loading || !budgetData) {
+  if (loading || !budgetStats) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -38,14 +38,14 @@ export default function BudgetDashboardScreen({ navigation }: any) {
     );
   }
 
-  const globalBudget = budgetData.monthlyBudget || 0;
-  const globalSpent = budgetData.totalEstimatedCost || 0;
-  const globalPercent = globalBudget > 0 ? Math.min((globalSpent / globalBudget) * 100, 100) : 0;
+  const globalBudget = budgetStats.monthlyBudget || 0;
+  const globalSpent = (budgetStats.confirmedSpent || 0) + (budgetStats.estimatedPending || 0);
+  const globalPercent = budgetStats.usagePercentage || 0;
 
   // Map categorySpending object to array for UI
-  const categories = Object.keys(budgetData.categorySpending || {}).map(catName => {
-    const spent = budgetData.categorySpending[catName];
-    const budget = budgetData.categoryBudgets?.[catName] || 0; 
+  const categories = Object.keys(budgetData?.categorySpending || {}).map(catName => {
+    const spent = budgetData?.categorySpending?.[catName] || 0;
+    const budget = budgetData?.categoryBudgets?.[catName] || 0; 
     return {
       name: catName,
       budget,
@@ -84,32 +84,70 @@ export default function BudgetDashboardScreen({ navigation }: any) {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Global Budget Card */}
         <PremiumCard variant="surface" style={styles.globalCard}>
-          <Text style={[styles.cardSubtitle, { color: colors.textLight }]}>GASTO ESTIMADO MENSUAL</Text>
+          <Text style={[styles.cardSubtitle, { color: colors.textLight }]}>GASTO MENSUAL</Text>
           
           <View style={styles.amountContainer}>
             <Text style={[styles.spentAmount, { color: colors.textPrimary }]}>
               RD$ {globalSpent.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
-            <Text style={[styles.totalAmount, { color: colors.textMuted }]}>
-              {' '}/ RD$ {globalBudget.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </Text>
+            {globalBudget > 0 && (
+              <Text style={[styles.totalAmount, { color: colors.textMuted }]}>
+                {' '}/ RD$ {globalBudget.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Text>
+            )}
           </View>
+
+          {/* Breakdown: Confirmado vs Pendiente */}
+          {globalSpent > 0 && (
+            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+              <View style={{ flex: 1, backgroundColor: colors.surfaceAlt, padding: 8, borderRadius: 8 }}>
+                <Text style={{ fontSize: 10, color: colors.textLight, textTransform: 'uppercase' }}>Confirmado</Text>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textPrimary }}>RD$ {budgetStats.confirmedSpent.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: colors.surfaceAlt, padding: 8, borderRadius: 8 }}>
+                <Text style={{ fontSize: 10, color: colors.textLight, textTransform: 'uppercase' }}>Estimado Pendiente</Text>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textPrimary }}>RD$ {budgetStats.estimatedPending.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</Text>
+              </View>
+            </View>
+          )}
           
-          <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceAlt }]}>
-            <LinearGradient 
-              colors={globalPercent >= 100 ? [colors.danger, '#EF4444'] : [colors.primary, '#34D399']} 
-              start={{ x: 0, y: 0 }} 
-              end={{ x: 1, y: 0 }} 
-              style={[styles.progressBarFill, { width: `${globalPercent}%` }]} 
-            />
-          </View>
-          
-          <Text style={[styles.remainingText, { color: (globalBudget - globalSpent) >= 0 ? colors.primary : colors.danger }]}>
-            {(globalBudget - globalSpent) >= 0 
-              ? `Te quedan RD$ ${(globalBudget - globalSpent).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} este mes`
-              : `Excedido por RD$ ${Math.abs(globalBudget - globalSpent).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} este mes`
-            }
-          </Text>
+          {globalBudget > 0 ? (
+            <>
+              <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceAlt }]}>
+                <LinearGradient 
+                  colors={globalPercent >= 100 ? [colors.danger, '#EF4444'] : [colors.primary, '#34D399']} 
+                  start={{ x: 0, y: 0 }} 
+                  end={{ x: 1, y: 0 }} 
+                  style={[styles.progressBarFill, { width: `${Math.min(globalPercent, 100)}%` }]} 
+                />
+              </View>
+              
+              <Text style={[styles.remainingText, { color: (globalBudget - globalSpent) >= 0 ? colors.primary : colors.danger }]}>
+                {(globalBudget - globalSpent) >= 0 
+                  ? `Te quedan RD$ ${(globalBudget - globalSpent).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} este mes`
+                  : `Has excedido tu presupuesto mensual por RD$ ${Math.abs(globalBudget - globalSpent).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                }
+              </Text>
+            </>
+          ) : (
+            <View style={{ marginTop: 8, padding: 12, backgroundColor: colors.surfaceAlt, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}>
+              <Feather name="info" size={16} color={colors.primary} style={{ marginRight: 8 }} />
+              <Text style={{ color: colors.textSecondary, fontSize: 13, flex: 1 }}>
+                Configura tu presupuesto mensual para ver cuánto puedes gastar.
+              </Text>
+            </View>
+          )}
+
+          {globalSpent === 0 && (
+             <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 12, fontStyle: 'italic' }}>
+               Todavía no tienes compras confirmadas este mes.
+             </Text>
+          )}
+          {globalSpent > 0 && budgetStats.estimatedPending > 0 && (
+             <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 12 }}>
+               * Este monto incluye tus compras confirmadas y listas pendientes.
+             </Text>
+          )}
         </PremiumCard>
 
         {/* AI Alerts */}

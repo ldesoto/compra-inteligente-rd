@@ -22,29 +22,26 @@ export const HomeScreen = ({ navigation }: any) => {
     darkMode, 
     language, 
     lists, 
-    isPremium 
+    isPremium,
+    budgetStats
   } = useAppStore();
 
   const [clippedOffers, setClippedOffers] = React.useState<number[]>([]);
   const [isScraping, setIsScraping] = React.useState(false);
-  const [budgetData, setBudgetData] = React.useState<any>(null);
+  // We no longer use this local mock state
+  // const [budgetData, setBudgetData] = React.useState<any>(null);
 
   React.useEffect(() => {
     fetchLists();
     fetchDashboardData();
   }, []);
 
-  React.useEffect(() => {
-    if (currentList) {
-      fetchBudgetAnalysis(currentList.id).then(setBudgetData).catch(console.warn);
-    }
-  }, [currentList]);
-
   const colors = darkMode ? themeColors.dark : themeColors.light;
 
-  const globalBudget = budgetData?.monthlyBudget || 0;
-  const globalSpent = budgetData?.totalEstimatedCost || 0;
-  const remainingBudget = globalBudget > 0 ? (globalBudget - globalSpent) : 0;
+  const globalBudget = budgetStats?.monthlyBudget || 0;
+  // Gastado = Lo ya confirmado + lo estimado pendiente (según arquitectura Fase 2)
+  const globalSpent = (budgetStats?.confirmedSpent || 0) + (budgetStats?.estimatedPending || 0);
+  const remainingBudget = budgetStats?.available || 0;
   const isOverBudget = remainingBudget < 0;
 
   const toggleClip = (id: number) => {

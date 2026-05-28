@@ -104,6 +104,7 @@ export interface AppState {
   alerts: Alert[];
 
   // Savings & Dashboard Data
+  budgetStats: { monthlyBudget: number; confirmedSpent: number; estimatedPending: number; available: number; usagePercentage: number } | null;
   monthlySavings: number;
   promotions: any[];
   offers: any[];
@@ -291,14 +292,20 @@ export const useAppStore = create<AppState>((set, get) => ({
   fetchDashboardData: async () => {
     set({ isLoadingDashboard: true });
     try {
-      const userId = get().user?.id || 'test-user-id';
-      
-      const [dashboardRes, promoRes] = await Promise.all([
-        api.get(`/budgets/dashboard?userId=${userId}`).catch(() => ({ data: { monthlySavings: 0, offers: [] } })),
-        api.get(`/promotions`).catch(() => ({ data: [] }))
+      const [budgetRes, promoRes, dashboardRes] = await Promise.all([
+        api.get(`/stats/budget`).catch(() => ({ data: null })),
+        api.get(`/promotions`).catch(() => ({ data: [] })),
+        api.get(`/budgets/dashboard?userId=${get().user?.id || 'test-user-id'}`).catch(() => ({ data: { monthlySavings: 0, offers: [] } }))
       ]);
 
       set({ 
+        budgetStats: budgetRes.data || {
+          monthlyBudget: 0,
+          confirmedSpent: 0,
+          estimatedPending: 0,
+          available: 0,
+          usagePercentage: 0
+        },
         monthlySavings: dashboardRes.data.monthlySavings || 0,
         offers: dashboardRes.data.offers || [],
         promotions: promoRes.data || [],
