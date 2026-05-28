@@ -50,7 +50,7 @@ export const SearchScreen = ({ navigation }: any) => {
     { name: 'Panadería y Repostería', image: require('../../assets/categories/cat_panaderia.png') },
     { name: 'Cuidado Personal',      image: require('../../assets/categories/cat_cuidado.png') },
     { name: 'Limpieza del Hogar',    image: require('../../assets/categories/cat_limpieza.png') },
-    { name: 'Bebés',                 image: require('../../assets/categories/cat_bebe.png') },
+    { name: 'Bebés',                 image: require('../../assets/categories/cat_bebes.png') },
     { name: 'Congelados',            image: require('../../assets/categories/cat_congelados.png') },
     { name: 'Hogar y Cocina',        image: require('../../assets/categories/cat_hogar.png') },
     { name: 'Mascotas',              image: require('../../assets/categories/cat_mascotas.png') },
