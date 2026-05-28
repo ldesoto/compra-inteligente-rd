@@ -3,6 +3,7 @@
     "name": "Comprix",
     "slug": "compra-inteligente-rd",
     "version": "1.0.0",
+    "scheme": "comprix",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
