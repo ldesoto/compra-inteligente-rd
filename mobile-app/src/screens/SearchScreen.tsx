@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import api from '../services/api';
 import { BottomTabBar } from '../components/BottomTabBar';
+import { Asset } from 'expo-asset';
 
 interface ProductResult {
   id: string;
@@ -13,14 +14,30 @@ interface ProductResult {
   category?: string;
 }
 
-const CategoryCard = ({ cat, onPress, onImageLoad }: { cat: any, onPress: () => void, onImageLoad: () => void }) => {
+const popularCategories = [
+  { name: 'Despensa',              image: require('../../assets/categories/cat_despensa.png') },
+  { name: 'Bebidas',               image: require('../../assets/categories/cat_bebidas.png') },
+  { name: 'Licores',               image: require('../../assets/categories/cat_licores.png') },
+  { name: 'Lácteos y Refrigerados', image: require('../../assets/categories/cat_lacteos.png') },
+  { name: 'Carnes y Mariscos',     image: require('../../assets/categories/cat_carnes_mariscos.png') },
+  { name: 'Frutas y Vegetales',    image: require('../../assets/categories/cat_frutas.png') },
+  { name: 'Snacks y Dulces',       image: require('../../assets/categories/cat_snacks.png') },
+  { name: 'Panadería y Repostería', image: require('../../assets/categories/cat_panaderia.png') },
+  { name: 'Cuidado Personal',      image: require('../../assets/categories/cat_cuidado.png') },
+  { name: 'Limpieza del Hogar',    image: require('../../assets/categories/cat_limpieza.png') },
+  { name: 'Bebés',                 image: require('../../assets/categories/cat_bebes.png') },
+  { name: 'Congelados',            image: require('../../assets/categories/cat_congelados.png') },
+  { name: 'Hogar y Cocina',        image: require('../../assets/categories/cat_hogar.png') },
+  { name: 'Mascotas',              image: require('../../assets/categories/cat_mascotas.png') },
+];
+
+const CategoryCard = ({ cat, onPress }: { cat: any, onPress: () => void }) => {
   return (
     <TouchableOpacity style={styles.categoryCard} onPress={onPress}>
       <View style={[styles.categoryIconBg, { padding: 0, overflow: 'hidden' }]}>
         <Image 
           source={cat.image} 
           style={{ width: '100%', height: '100%' }} 
-          onLoad={onImageLoad}
         />
       </View>
       <Text style={styles.categoryName} numberOfLines={2}>{cat.name}</Text>
@@ -28,7 +45,6 @@ const CategoryCard = ({ cat, onPress, onImageLoad }: { cat: any, onPress: () => 
   );
 };
 
-// Variables globales para caché en memoria durante la sesión
 let hasPreloadedImages = false;
 
 export const SearchScreen = ({ navigation }: any) => {
@@ -36,32 +52,26 @@ export const SearchScreen = ({ navigation }: any) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [results, setResults] = useState<ProductResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadedImagesCount, setLoadedImagesCount] = useState(hasPreloadedImages ? 14 : 0);
+  const [allImagesLoaded, setAllImagesLoaded] = useState(hasPreloadedImages);
   const inputRef = useRef<TextInput>(null);
 
-  const popularCategories = [
-    { name: 'Despensa',              image: require('../../assets/categories/cat_despensa.png') },
-    { name: 'Bebidas',               image: require('../../assets/categories/cat_bebidas.png') },
-    { name: 'Licores',               image: require('../../assets/categories/cat_licores.png') },
-    { name: 'Lácteos y Refrigerados', image: require('../../assets/categories/cat_lacteos.png') },
-    { name: 'Carnes y Mariscos',     image: require('../../assets/categories/cat_carnes_mariscos.png') },
-    { name: 'Frutas y Vegetales',    image: require('../../assets/categories/cat_frutas.png') },
-    { name: 'Snacks y Dulces',       image: require('../../assets/categories/cat_snacks.png') },
-    { name: 'Panadería y Repostería', image: require('../../assets/categories/cat_panaderia.png') },
-    { name: 'Cuidado Personal',      image: require('../../assets/categories/cat_cuidado.png') },
-    { name: 'Limpieza del Hogar',    image: require('../../assets/categories/cat_limpieza.png') },
-    { name: 'Bebés',                 image: require('../../assets/categories/cat_bebes.png') },
-    { name: 'Congelados',            image: require('../../assets/categories/cat_congelados.png') },
-    { name: 'Hogar y Cocina',        image: require('../../assets/categories/cat_hogar.png') },
-    { name: 'Mascotas',              image: require('../../assets/categories/cat_mascotas.png') },
-  ];
-
-  // Efecto para marcar como cacheadas una vez cargan todas
   useEffect(() => {
-    if (loadedImagesCount >= popularCategories.length) {
-      hasPreloadedImages = true;
-    }
-  }, [loadedImagesCount]);
+    if (hasPreloadedImages) return;
+    
+    const preloadImages = async () => {
+      try {
+        const imagesToPreload = popularCategories.map(cat => Asset.loadAsync(cat.image));
+        await Promise.all(imagesToPreload);
+        hasPreloadedImages = true;
+        setAllImagesLoaded(true);
+      } catch (e) {
+        console.warn('Error preloading images', e);
+        setAllImagesLoaded(true);
+      }
+    };
+    
+    preloadImages();
+  }, []);
 
   useEffect(() => {
     if (!selectedCategory && query.trim().length < 2) {
@@ -110,7 +120,6 @@ export const SearchScreen = ({ navigation }: any) => {
   };
 
   const showCategories = !selectedCategory && query.length < 2;
-  const allImagesLoaded = loadedImagesCount >= popularCategories.length;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
@@ -174,7 +183,6 @@ export const SearchScreen = ({ navigation }: any) => {
                     key={i} 
                     cat={cat} 
                     onPress={() => handleCategoryPress(cat.name)} 
-                    onImageLoad={() => setLoadedImagesCount(prev => prev + 1)}
                   />
                 ))}
               </View>
