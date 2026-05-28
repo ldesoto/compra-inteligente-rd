@@ -74,57 +74,57 @@ const JUMBO_CONFIG: SupermarketConfig = {
   },
   categories: [
     // ── Granos y Despensa ──────────────────────────────────
-    { categoryName: 'Arroz', dbCategoryName: 'Granos y Cereales', url: 'https://jumbo.com.do/supermercado/despensa/arroz-cereales-y-legumbres/arroz', maxPages: 5 },
-    { categoryName: 'Aceites y Grasas', dbCategoryName: 'Aceites y Grasas', url: 'https://jumbo.com.do/supermercado/despensa/aceites', maxPages: 4 },
-    { categoryName: 'Pastas', dbCategoryName: 'Pastas y Harinas', url: 'https://jumbo.com.do/supermercado/despensa/pastas', maxPages: 3 },
-    { categoryName: 'Habichuelas y Legumbres', dbCategoryName: 'Granos y Cereales', url: 'https://jumbo.com.do/supermercado/despensa/arroz-cereales-y-legumbres', maxPages: 4 },
-    { categoryName: 'Conservas y Enlatados', dbCategoryName: 'Enlatados', url: 'https://jumbo.com.do/supermercado/despensa/conservas-y-encurtidos', maxPages: 5 },
-    { categoryName: 'Salsas y Condimentos', dbCategoryName: 'Condimentos', url: 'https://jumbo.com.do/supermercado/despensa/salsas-y-condimentos', maxPages: 4 },
-    { categoryName: 'Azucar y Endulzantes', dbCategoryName: 'Azúcar y Endulzantes', url: 'https://jumbo.com.do/supermercado/despensa/azucar-y-endulzantes', maxPages: 3 },
-    { categoryName: 'Cafe y Te', dbCategoryName: 'Café y Bebidas Calientes', url: 'https://jumbo.com.do/supermercado/despensa/cafe-y-te', maxPages: 3 },
-    { categoryName: 'Cereales', dbCategoryName: 'Cereales', url: 'https://jumbo.com.do/supermercado/despensa/cereales', maxPages: 4 },
+    { categoryName: 'Arroz', dbCategoryName: 'Despensa', url: 'https://jumbo.com.do/supermercado/despensa/arroz-cereales-y-legumbres/arroz', maxPages: 5 },
+    { categoryName: 'Aceites y Grasas', dbCategoryName: 'Despensa', url: 'https://jumbo.com.do/supermercado/despensa/aceites', maxPages: 4 },
+    { categoryName: 'Pastas', dbCategoryName: 'Despensa', url: 'https://jumbo.com.do/supermercado/despensa/pastas', maxPages: 3 },
+    { categoryName: 'Habichuelas y Legumbres', dbCategoryName: 'Despensa', url: 'https://jumbo.com.do/supermercado/despensa/arroz-cereales-y-legumbres', maxPages: 4 },
+    { categoryName: 'Conservas y Enlatados', dbCategoryName: 'Despensa', url: 'https://jumbo.com.do/supermercado/despensa/conservas-y-encurtidos', maxPages: 5 },
+    { categoryName: 'Salsas y Condimentos', dbCategoryName: 'Despensa', url: 'https://jumbo.com.do/supermercado/despensa/salsas-y-condimentos', maxPages: 4 },
+    { categoryName: 'Azucar y Endulzantes', dbCategoryName: 'Despensa', url: 'https://jumbo.com.do/supermercado/despensa/azucar-y-endulzantes', maxPages: 3 },
+    { categoryName: 'Cafe y Te', dbCategoryName: 'Bebidas', url: 'https://jumbo.com.do/supermercado/despensa/cafe-y-te', maxPages: 3 },
+    { categoryName: 'Cereales', dbCategoryName: 'Despensa', url: 'https://jumbo.com.do/supermercado/despensa/cereales', maxPages: 4 },
     { categoryName: 'Galletas y Snacks', dbCategoryName: 'Snacks y Dulces', url: 'https://jumbo.com.do/supermercado/despensa/galletas', maxPages: 5 },
     
     // ── Carnes y Embutidos ──────────────────────────────────
-    { categoryName: 'Carne de Res', dbCategoryName: 'Carnes', url: 'https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/carnes/res', maxPages: 4 },
-    { categoryName: 'Carnes Premium Angus', dbCategoryName: 'Carnes Premium', url: 'https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/carnes/certfied-angus-beef', maxPages: 2 },
-    { categoryName: 'Carne de Cerdo', dbCategoryName: 'Carnes', url: 'https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/carnes/cerdo', maxPages: 3 },
-    { categoryName: 'Pollo y Aves', dbCategoryName: 'Aves', url: 'https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/carnes/pollo', maxPages: 4 },
-    { categoryName: 'Embutidos y Salchichas', dbCategoryName: 'Embutidos', url: 'https://jumbo.com.do/supermercado/lacteos-quesos-y-huevos/embutidos', maxPages: 5 },
+    { categoryName: 'Carne de Res', dbCategoryName: 'Carnes y Mariscos', url: 'https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/carnes/res', maxPages: 4 },
+    { categoryName: 'Carnes Premium Angus', dbCategoryName: 'Carnes y Mariscos', url: 'https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/carnes/certfied-angus-beef', maxPages: 2 },
+    { categoryName: 'Carne de Cerdo', dbCategoryName: 'Carnes y Mariscos', url: 'https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/carnes/cerdo', maxPages: 3 },
+    { categoryName: 'Pollo y Aves', dbCategoryName: 'Carnes y Mariscos', url: 'https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/carnes/pollo', maxPages: 4 },
+    { categoryName: 'Embutidos y Salchichas', dbCategoryName: 'Carnes y Mariscos', url: 'https://jumbo.com.do/supermercado/lacteos-quesos-y-huevos/embutidos', maxPages: 5 },
     
     // ── Mariscos y Pescados ───────────────────────────────
-    { categoryName: 'Pescados y Mariscos', dbCategoryName: 'Mariscos y Pescados', url: 'https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/pescados-y-mariscos', maxPages: 4 },
+    { categoryName: 'Pescados y Mariscos', dbCategoryName: 'Carnes y Mariscos', url: 'https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/pescados-y-mariscos', maxPages: 4 },
     
     // ── Lácteos y Huevos ──────────────────────────────────
-    { categoryName: 'Leche', dbCategoryName: 'Lácteos', url: 'https://jumbo.com.do/supermercado/lacteos-quesos-y-huevos/leche', maxPages: 5 },
-    { categoryName: 'Quesos', dbCategoryName: 'Lácteos', url: 'https://jumbo.com.do/supermercado/lacteos-quesos-y-huevos/quesos', maxPages: 4 },
-    { categoryName: 'Huevos', dbCategoryName: 'Huevos', url: 'https://jumbo.com.do/supermercado/lacteos-quesos-y-huevos/huevos', maxPages: 2 },
+    { categoryName: 'Leche', dbCategoryName: 'Lácteos y Refrigerados', url: 'https://jumbo.com.do/supermercado/lacteos-quesos-y-huevos/leche', maxPages: 5 },
+    { categoryName: 'Quesos', dbCategoryName: 'Lácteos y Refrigerados', url: 'https://jumbo.com.do/supermercado/lacteos-quesos-y-huevos/quesos', maxPages: 4 },
+    { categoryName: 'Huevos', dbCategoryName: 'Lácteos y Refrigerados', url: 'https://jumbo.com.do/supermercado/lacteos-quesos-y-huevos/huevos', maxPages: 2 },
     
     // ── Panadería ─────────────────────────────────────────
-    { categoryName: 'Pan de Molde', dbCategoryName: 'Panes', url: 'https://jumbo.com.do/supermercado/panaderia-y-reposteria/panaderia/pan-de-molde', maxPages: 2 },
-    { categoryName: 'Pan Tradicional', dbCategoryName: 'Panes', url: 'https://jumbo.com.do/supermercado/panaderia-y-reposteria/panaderia/pan-tradicional', maxPages: 2 },
+    { categoryName: 'Pan de Molde', dbCategoryName: 'Panadería y Repostería', url: 'https://jumbo.com.do/supermercado/panaderia-y-reposteria/panaderia/pan-de-molde', maxPages: 2 },
+    { categoryName: 'Pan Tradicional', dbCategoryName: 'Panadería y Repostería', url: 'https://jumbo.com.do/supermercado/panaderia-y-reposteria/panaderia/pan-tradicional', maxPages: 2 },
     
     // ── Frutas y Vegetales ────────────────────────────────
-    { categoryName: 'Vegetales y Hortalizas', dbCategoryName: 'Vegetales', url: 'https://jumbo.com.do/supermercado/frutas-y-vegetales/vegetales-y-hortalizas', maxPages: 5 },
-    { categoryName: 'Viveres (Platanos, Yuca)', dbCategoryName: 'Víveres', url: 'https://jumbo.com.do/supermercado/frutas-y-vegetales/viveres', maxPages: 3 },
-    { categoryName: 'Frutas', dbCategoryName: 'Frutas', url: 'https://jumbo.com.do/supermercado/frutas-y-vegetales/frutas', maxPages: 4 },
+    { categoryName: 'Vegetales y Hortalizas', dbCategoryName: 'Frutas y Vegetales', url: 'https://jumbo.com.do/supermercado/frutas-y-vegetales/vegetales-y-hortalizas', maxPages: 5 },
+    { categoryName: 'Viveres (Platanos, Yuca)', dbCategoryName: 'Frutas y Vegetales', url: 'https://jumbo.com.do/supermercado/frutas-y-vegetales/viveres', maxPages: 3 },
+    { categoryName: 'Frutas', dbCategoryName: 'Frutas y Vegetales', url: 'https://jumbo.com.do/supermercado/frutas-y-vegetales/frutas', maxPages: 4 },
     
     // ── Bebidas ───────────────────────────────────────────
     { categoryName: 'Jugos', dbCategoryName: 'Bebidas', url: 'https://jumbo.com.do/supermercado/bebidas/aguas-refrescos-y-jugos/jugos', maxPages: 4 },
     { categoryName: 'Refrescos', dbCategoryName: 'Bebidas', url: 'https://jumbo.com.do/supermercado/bebidas/aguas-refrescos-y-jugos/refrescos', maxPages: 4 },
     { categoryName: 'Aguas', dbCategoryName: 'Bebidas', url: 'https://jumbo.com.do/supermercado/bebidas/aguas-refrescos-y-jugos/agua', maxPages: 2 },
-    { categoryName: 'Cervezas y Vinos', dbCategoryName: 'Licores y Bebidas', url: 'https://jumbo.com.do/supermercado/bebidas/cervezas-vinos-y-espirituosos', maxPages: 4 },
+    { categoryName: 'Cervezas y Vinos', dbCategoryName: 'Licores', url: 'https://jumbo.com.do/supermercado/bebidas/cervezas-vinos-y-espirituosos', maxPages: 4 },
     
     // ── Limpieza del Hogar ────────────────────────────────
-    { categoryName: 'Papel Higienico', dbCategoryName: 'Artículos del Hogar', url: 'https://jumbo.com.do/supermercado/limpieza-y-desechables/desechables-y-organizacion/papel-higienico', maxPages: 3 },
-    { categoryName: 'Detergentes y Lavado', dbCategoryName: 'Limpieza', url: 'https://jumbo.com.do/supermercado/limpieza-y-desechables/lavanderia', maxPages: 4 },
-    { categoryName: 'Cloros y Desinfectantes', dbCategoryName: 'Limpieza', url: 'https://jumbo.com.do/supermercado/limpieza-y-desechables/limpiadores', maxPages: 4 },
-    { categoryName: 'Desechables (Platos, Vasos, Servilletas)', dbCategoryName: 'Desechables', url: 'https://jumbo.com.do/supermercado/limpieza-y-desechables/desechables-y-organizacion', maxPages: 4 },
+    { categoryName: 'Papel Higienico', dbCategoryName: 'Limpieza del Hogar', url: 'https://jumbo.com.do/supermercado/limpieza-y-desechables/desechables-y-organizacion/papel-higienico', maxPages: 3 },
+    { categoryName: 'Detergentes y Lavado', dbCategoryName: 'Limpieza del Hogar', url: 'https://jumbo.com.do/supermercado/limpieza-y-desechables/lavanderia', maxPages: 4 },
+    { categoryName: 'Cloros y Desinfectantes', dbCategoryName: 'Limpieza del Hogar', url: 'https://jumbo.com.do/supermercado/limpieza-y-desechables/limpiadores', maxPages: 4 },
+    { categoryName: 'Desechables (Platos, Vasos, Servilletas)', dbCategoryName: 'Hogar y Cocina', url: 'https://jumbo.com.do/supermercado/limpieza-y-desechables/desechables-y-organizacion', maxPages: 4 },
     
     // ── Cuidado Personal ──────────────────────────────────
-    { categoryName: 'Pasta Dental', dbCategoryName: 'Higiene Personal', url: 'https://jumbo.com.do/salud-y-belleza/cuidado-oral/cremas-dentales', maxPages: 2 },
-    { categoryName: 'Shampoo', dbCategoryName: 'Higiene Personal', url: 'https://jumbo.com.do/salud-y-belleza/cuidado-del-cabello', maxPages: 3 },
-    { categoryName: 'Cuidado Personal', dbCategoryName: 'Higiene Personal', url: 'https://jumbo.com.do/salud-y-belleza/cuidado-personal', maxPages: 4 },
+    { categoryName: 'Pasta Dental', dbCategoryName: 'Cuidado Personal', url: 'https://jumbo.com.do/salud-y-belleza/cuidado-oral/cremas-dentales', maxPages: 2 },
+    { categoryName: 'Shampoo', dbCategoryName: 'Cuidado Personal', url: 'https://jumbo.com.do/salud-y-belleza/cuidado-del-cabello', maxPages: 3 },
+    { categoryName: 'Cuidado Personal', dbCategoryName: 'Cuidado Personal', url: 'https://jumbo.com.do/salud-y-belleza/cuidado-personal', maxPages: 4 },
   ],
 };
 
@@ -151,32 +151,32 @@ const SIRENA_CONFIG: SupermarketConfig = {
     urlFilter: (url) => url.includes('sirena.do/') && !url.includes('/p') && !url.includes('login') && url.length > 20,
   },
   categories: [
-    { categoryName: 'Arroz', dbCategoryName: 'Granos y Cereales', url: 'https://sirena.do/arroz?map=c', maxPages: 3 },
-    { categoryName: 'Aceites', dbCategoryName: 'Aceites y Grasas', url: 'https://sirena.do/aceites?map=c', maxPages: 3 },
-    { categoryName: 'Cereales', dbCategoryName: 'Cereales', url: 'https://sirena.do/cereales?map=c', maxPages: 3 },
+    { categoryName: 'Arroz', dbCategoryName: 'Despensa', url: 'https://sirena.do/arroz?map=c', maxPages: 3 },
+    { categoryName: 'Aceites', dbCategoryName: 'Despensa', url: 'https://sirena.do/aceites?map=c', maxPages: 3 },
+    { categoryName: 'Cereales', dbCategoryName: 'Despensa', url: 'https://sirena.do/cereales?map=c', maxPages: 3 },
     { categoryName: 'Galletas y Snacks', dbCategoryName: 'Snacks y Dulces', url: 'https://sirena.do/galletas?map=c', maxPages: 3 },
     
-    { categoryName: 'Carnes', dbCategoryName: 'Carnes', url: 'https://sirena.do/carnes?map=c', maxPages: 4 },
-    { categoryName: 'Pollo', dbCategoryName: 'Aves', url: 'https://sirena.do/pollo?map=c', maxPages: 3 },
-    { categoryName: 'Embutidos y Salchichas', dbCategoryName: 'Embutidos', url: 'https://sirena.do/embutidos?map=c', maxPages: 4 },
-    { categoryName: 'Pescados y Mariscos', dbCategoryName: 'Mariscos y Pescados', url: 'https://sirena.do/mariscos?map=c', maxPages: 3 },
+    { categoryName: 'Carnes', dbCategoryName: 'Carnes y Mariscos', url: 'https://sirena.do/carnes?map=c', maxPages: 4 },
+    { categoryName: 'Pollo', dbCategoryName: 'Carnes y Mariscos', url: 'https://sirena.do/pollo?map=c', maxPages: 3 },
+    { categoryName: 'Embutidos y Salchichas', dbCategoryName: 'Carnes y Mariscos', url: 'https://sirena.do/embutidos?map=c', maxPages: 4 },
+    { categoryName: 'Pescados y Mariscos', dbCategoryName: 'Carnes y Mariscos', url: 'https://sirena.do/mariscos?map=c', maxPages: 3 },
     
-    { categoryName: 'Lacteos', dbCategoryName: 'Lácteos', url: 'https://sirena.do/lacteos?map=c', maxPages: 4 },
-    { categoryName: 'Quesos', dbCategoryName: 'Lácteos', url: 'https://sirena.do/quesos?map=c', maxPages: 3 },
-    { categoryName: 'Panes', dbCategoryName: 'Panes', url: 'https://sirena.do/panaderia?map=c', maxPages: 3 },
+    { categoryName: 'Lacteos', dbCategoryName: 'Lácteos y Refrigerados', url: 'https://sirena.do/lacteos?map=c', maxPages: 4 },
+    { categoryName: 'Quesos', dbCategoryName: 'Lácteos y Refrigerados', url: 'https://sirena.do/quesos?map=c', maxPages: 3 },
+    { categoryName: 'Panes', dbCategoryName: 'Panadería y Repostería', url: 'https://sirena.do/panaderia?map=c', maxPages: 3 },
     
-    { categoryName: 'Vegetales', dbCategoryName: 'Vegetales', url: 'https://sirena.do/vegetales?map=c', maxPages: 4 },
-    { categoryName: 'Viveres', dbCategoryName: 'Víveres', url: 'https://sirena.do/viveres?map=c', maxPages: 3 },
-    { categoryName: 'Frutas', dbCategoryName: 'Frutas', url: 'https://sirena.do/frutas?map=c', maxPages: 3 },
+    { categoryName: 'Vegetales', dbCategoryName: 'Frutas y Vegetales', url: 'https://sirena.do/vegetales?map=c', maxPages: 4 },
+    { categoryName: 'Viveres', dbCategoryName: 'Frutas y Vegetales', url: 'https://sirena.do/viveres?map=c', maxPages: 3 },
+    { categoryName: 'Frutas', dbCategoryName: 'Frutas y Vegetales', url: 'https://sirena.do/frutas?map=c', maxPages: 3 },
     
     { categoryName: 'Bebidas', dbCategoryName: 'Bebidas', url: 'https://sirena.do/bebidas?map=c', maxPages: 4 },
-    { categoryName: 'Enlatados', dbCategoryName: 'Enlatados', url: 'https://sirena.do/enlatados?map=c', maxPages: 3 },
+    { categoryName: 'Enlatados', dbCategoryName: 'Despensa', url: 'https://sirena.do/enlatados?map=c', maxPages: 3 },
     
-    { categoryName: 'Limpieza', dbCategoryName: 'Artículos del Hogar', url: 'https://sirena.do/limpieza?map=c', maxPages: 4 },
-    { categoryName: 'Cloros y Desinfectantes', dbCategoryName: 'Limpieza', url: 'https://sirena.do/cloros?map=c', maxPages: 3 },
-    { categoryName: 'Desechables (Platos, Vasos)', dbCategoryName: 'Desechables', url: 'https://sirena.do/desechables?map=c', maxPages: 3 },
+    { categoryName: 'Limpieza', dbCategoryName: 'Limpieza del Hogar', url: 'https://sirena.do/limpieza?map=c', maxPages: 4 },
+    { categoryName: 'Cloros y Desinfectantes', dbCategoryName: 'Limpieza del Hogar', url: 'https://sirena.do/cloros?map=c', maxPages: 3 },
+    { categoryName: 'Desechables (Platos, Vasos)', dbCategoryName: 'Hogar y Cocina', url: 'https://sirena.do/desechables?map=c', maxPages: 3 },
     
-    { categoryName: 'Higiene Personal', dbCategoryName: 'Higiene Personal', url: 'https://sirena.do/cuidado-personal?map=c', maxPages: 4 },
+    { categoryName: 'Higiene Personal', dbCategoryName: 'Cuidado Personal', url: 'https://sirena.do/cuidado-personal?map=c', maxPages: 4 },
   ],
 };
 
@@ -219,11 +219,11 @@ const PLAZA_LAMA_CONFIG: SupermarketConfig = {
     urlFilter: (url) => url.includes('/ca/') && !url.includes('?') && url.length > 30,
   },
   categories: [
-    { categoryName: 'Arroz', dbCategoryName: 'Granos y Cereales', url: 'https://plazalama.com.do/ca/supermercado/11', maxPages: 3 },
-    { categoryName: 'Aceites', dbCategoryName: 'Aceites y Grasas', url: 'https://plazalama.com.do/ca/supermercado/11', maxPages: 2 },
-    { categoryName: 'Carnes', dbCategoryName: 'Carnes', url: 'https://plazalama.com.do/ca/supermercado/11', maxPages: 2 },
-    { categoryName: 'Lacteos', dbCategoryName: 'Lácteos', url: 'https://plazalama.com.do/ca/supermercado/11', maxPages: 2 },
-    { categoryName: 'Limpieza', dbCategoryName: 'Limpieza', url: 'https://plazalama.com.do/ca/supermercado/11', maxPages: 2 },
+    { categoryName: 'Arroz', dbCategoryName: 'Despensa', url: 'https://plazalama.com.do/ca/supermercado/11', maxPages: 3 },
+    { categoryName: 'Aceites', dbCategoryName: 'Despensa', url: 'https://plazalama.com.do/ca/supermercado/11', maxPages: 2 },
+    { categoryName: 'Carnes', dbCategoryName: 'Carnes y Mariscos', url: 'https://plazalama.com.do/ca/supermercado/11', maxPages: 2 },
+    { categoryName: 'Lacteos', dbCategoryName: 'Lácteos y Refrigerados', url: 'https://plazalama.com.do/ca/supermercado/11', maxPages: 2 },
+    { categoryName: 'Limpieza', dbCategoryName: 'Limpieza del Hogar', url: 'https://plazalama.com.do/ca/supermercado/11', maxPages: 2 },
   ],
 };
 
@@ -248,9 +248,9 @@ const BRAVO_CONFIG: SupermarketConfig = {
     urlFilter: (url) => url.includes('/c/') && url.length > 15,
   },
   categories: [
-    { categoryName: 'Arroz', dbCategoryName: 'Granos y Cereales', url: 'https://bravo.do/c/arroz', maxPages: 2 },
-    { categoryName: 'Carnes', dbCategoryName: 'Carnes', url: 'https://bravo.do/c/carnes', maxPages: 2 },
-    { categoryName: 'Lacteos', dbCategoryName: 'Lácteos', url: 'https://bravo.do/c/lacteos', maxPages: 2 },
+    { categoryName: 'Arroz', dbCategoryName: 'Despensa', url: 'https://bravo.do/c/arroz', maxPages: 2 },
+    { categoryName: 'Carnes', dbCategoryName: 'Carnes y Mariscos', url: 'https://bravo.do/c/carnes', maxPages: 2 },
+    { categoryName: 'Lacteos', dbCategoryName: 'Lácteos y Refrigerados', url: 'https://bravo.do/c/lacteos', maxPages: 2 },
   ],
 };
 
@@ -275,8 +275,8 @@ const CARREFOUR_CONFIG: SupermarketConfig = {
     urlFilter: (url) => url.includes('/c/') && !url.includes('?'),
   },
   categories: [
-    { categoryName: 'Vinos y Cervezas', dbCategoryName: 'Licores y Bebidas', url: 'https://mercado.carrefour.do/c/bebidas', maxPages: 2 },
-    { categoryName: 'Lácteos', dbCategoryName: 'Lácteos', url: 'https://mercado.carrefour.do/c/lacteos', maxPages: 2 },
+    { categoryName: 'Vinos y Cervezas', dbCategoryName: 'Licores', url: 'https://mercado.carrefour.do/c/bebidas', maxPages: 2 },
+    { categoryName: 'Lácteos', dbCategoryName: 'Lácteos y Refrigerados', url: 'https://mercado.carrefour.do/c/lacteos', maxPages: 2 },
     { categoryName: 'Despensa', dbCategoryName: 'Despensa', url: 'https://mercado.carrefour.do/c/despensa', maxPages: 2 },
   ],
 };
