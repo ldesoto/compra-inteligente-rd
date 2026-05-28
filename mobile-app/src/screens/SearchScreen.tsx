@@ -131,7 +131,7 @@ export const SearchScreen = ({ navigation }: any) => {
 
       <View style={{ flex: 1 }}>
         {showCategories ? (
-          <View style={styles.categoriesSection}>
+          <ScrollView contentContainerStyle={styles.categoriesSection} showsVerticalScrollIndicator={false}>
             <Text style={styles.sectionTitle}>Categorías Populares</Text>
             <View style={styles.categoriesGrid}>
               {popularCategories.map((cat, i) => (
@@ -143,7 +143,7 @@ export const SearchScreen = ({ navigation }: any) => {
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
+          </ScrollView>
         ) : isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#059669" />
