@@ -1,9 +1,8 @@
 import axios from 'axios';
 import { Platform, Alert } from 'react-native';
 
-// Conexión al servidor local para no depender de despliegues lentos en Render
-// Si usas un dispositivo físico en Android/iOS, cambia 'localhost' por la IP de tu computadora (ej: 192.168.1.5)
-const baseURL = 'http://localhost:3001';
+// Conexión al servidor local usando tu IP de la red para que funcione en dispositivos físicos
+const baseURL = 'http://10.0.0.43:3001';
 
 const api = axios.create({
   baseURL,
