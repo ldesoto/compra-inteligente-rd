@@ -867,11 +867,23 @@ export class ScraperService {
     const normQuery = normalize(query);
     const normCategory = categoryFilter ? normalize(categoryFilter) : null;
 
+    const whereClause: any = {};
+    if (categoryFilter) {
+      whereClause.category = { name: { equals: categoryFilter } };
+    }
+    
+    // Split query into words to do a basic DB-level filter and avoid pulling 10,000 records to memory.
+    if (query && query.length >= 2) {
+      const words = query.trim().split(/\s+/);
+      if (words.length > 0) {
+        // Natively case-insensitive in SQLite
+        whereClause.name = { contains: words[0] };
+      }
+    }
+
     const allProducts = await this.prisma.canonicalProduct.findMany({
       orderBy: { name: 'asc' },
-      where: categoryFilter
-        ? { category: { name: { equals: categoryFilter } } }
-        : undefined,
+      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
       include: {
         category: true,
         productMatches: {
