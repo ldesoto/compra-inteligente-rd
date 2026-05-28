@@ -776,10 +776,16 @@ export class ScraperService {
     });
 
     if (!canonical) {
+      let finalCategoryId = categoryId;
+      if (normalizedName.toLowerCase().includes('chicharron') || normalizedName.toLowerCase().includes('chicharrón')) {
+        const despensa = await this.prisma.category.findFirst({ where: { name: 'Despensa' } });
+        if (despensa) finalCategoryId = despensa.id;
+      }
+
       canonical = await this.prisma.canonicalProduct.create({
         data: {
           name: normalizedName,
-          categoryId,
+          categoryId: finalCategoryId,
           defaultImageUrl: scraped.imageUrl,
         },
       });
