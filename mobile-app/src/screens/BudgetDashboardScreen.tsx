@@ -151,7 +151,7 @@ export default function BudgetDashboardScreen({ navigation }: any) {
         </PremiumCard>
 
         {/* AI Alerts */}
-        {budgetData.alerts && budgetData.alerts.length > 0 && (
+        {budgetData?.alerts && budgetData.alerts.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Alertas del Asistente IA</Text>
             {budgetData.alerts.map((alert: any, idx: number) => (
