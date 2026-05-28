@@ -39,6 +39,11 @@ export class ListsController {
     return this.listsService.getCollaborators(listId);
   }
 
+  @Post(':id/mark-purchased')
+  async markPurchased(@Req() req, @Param('id') listId: string, @Body() body: any) {
+    return this.listsService.markListAsPurchased(req.user.id, listId, body);
+  }
+
   @Patch(':id')
   async updateList(@Param('id') id: string, @Body() body: { name: string }) {
     return this.listsService.updateList(id, body.name);

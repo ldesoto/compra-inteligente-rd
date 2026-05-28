@@ -284,6 +284,89 @@ export class ListsService {
     });
   }
 
+  async markListAsPurchased(userId: string, listId: string, payload: { supermarketId: string, finalTotal: number, items: { canonicalProdId: string, quantity: number, confirmedPrice: number, productNameRaw: string }[] }) {
+    const list = await this.prisma.shoppingList.findUnique({ where: { id: listId, ownerId: userId } });
+    if (!list) throw new NotFoundException('Lista no encontrada o no te pertenece');
+
+    if (list.status === 'PURCHASED') {
+      throw new Error('La lista ya fue marcada como comprada.');
+    }
+
+    // 1. Crear Purchase y PurchaseItems en una transacción
+    // 2. Calcular SavingsSnapshot comparando contra mercado actual
+    // Obtenemos los precios promedio del mercado hoy para estos items
+    let marketTotal = 0;
+    const detailsObj: Record<string, any> = {};
+
+    for (const item of payload.items) {
+      if (item.canonicalProdId) {
+        // Promedio de precios recientes en otros supermercados
+        const recentPrices = await this.prisma.priceHistory.findMany({
+          where: {
+            productMatch: { canonicalProductId: item.canonicalProdId },
+            timestamp: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // Ultimos 7 días
+          },
+          orderBy: { timestamp: 'desc' },
+          take: 5
+        });
+
+        if (recentPrices.length > 0) {
+          const avg = recentPrices.reduce((acc, curr) => acc + curr.price, 0) / recentPrices.length;
+          marketTotal += avg * item.quantity;
+          detailsObj[item.canonicalProdId] = { marketAvg: avg, paid: item.confirmedPrice };
+        } else {
+          marketTotal += item.confirmedPrice * item.quantity;
+          detailsObj[item.canonicalProdId] = { marketAvg: item.confirmedPrice, paid: item.confirmedPrice };
+        }
+      }
+    }
+
+    const totalConfirmedSavings = marketTotal > payload.finalTotal ? marketTotal - payload.finalTotal : 0;
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Marcar lista como PURCHASED
+      await tx.shoppingList.update({
+        where: { id: listId },
+        data: { status: 'PURCHASED' }
+      });
+
+      // Crear Purchase
+      const purchase = await tx.purchase.create({
+        data: {
+          userId,
+          shoppingListId: listId,
+          supermarketId: payload.supermarketId,
+          confirmedTotal: payload.finalTotal,
+          status: 'CONFIRMED',
+          items: {
+            create: payload.items.map(i => ({
+              canonicalProdId: i.canonicalProdId,
+              productNameRaw: i.productNameRaw,
+              quantity: i.quantity,
+              confirmedPrice: i.confirmedPrice
+            }))
+          }
+        }
+      });
+
+      // Crear Snapshot
+      const snapshot = await tx.savingsSnapshot.create({
+        data: {
+          purchaseId: purchase.id,
+          userId,
+          totalConfirmedSavings,
+          marketAverageTotal: marketTotal,
+          highestMarketTotal: marketTotal, // Simplify for MVP
+          detailsJson: JSON.stringify(detailsObj)
+        }
+      });
+
+      return { purchase, snapshot };
+    });
+
+    return { success: true, ...result };
+  }
+
   async deleteList(listId: string) {
     // Rely on Prisma's onDelete: Cascade for ListCollaborator and ShoppingListItem
     return this.prisma.shoppingList.delete({

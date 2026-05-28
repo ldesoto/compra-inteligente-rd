@@ -11,6 +11,8 @@ import { AiModule } from './ai/ai.module';
 import { OcrModule } from './ocr/ocr.module';
 import { AdminModule } from './admin/admin.module';
 
+import { StatsModule } from './stats/stats.module';
+
 @Module({
   imports: [
     PrismaModule,
@@ -22,6 +24,7 @@ import { AdminModule } from './admin/admin.module';
     AiModule,
     OcrModule,
     AdminModule,
+    StatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
