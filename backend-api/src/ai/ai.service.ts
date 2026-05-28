@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { isPrivateLabel } from '../utils/private-label';
 
 @Injectable()
 export class AiService {
@@ -132,6 +133,8 @@ Instrucciones:
     const regularPromotions = []; // Tienen promoción pero la diferencia no es masiva
 
     for (const m of matches) {
+      if (isPrivateLabel(m.canonicalProduct?.name || '', m.supermarket?.name || '')) continue;
+
       if (m.priceHistory.length > 1) {
         const current = m.priceHistory[0];
         const previous = m.priceHistory[1];
@@ -253,6 +256,7 @@ Instrucciones:
       let altAvgPrice = 0;
       let altCount = 0;
       (alt as any).productMatches?.forEach((m: any) => {
+        if (isPrivateLabel(alt.name, m.supermarket?.name || '')) return;
         if (m.priceHistory.length > 0) {
           altAvgPrice += m.priceHistory[0].price;
           altCount++;

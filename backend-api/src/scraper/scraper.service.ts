@@ -846,7 +846,7 @@ export class ScraperService {
 
   async getProductsByCategory(category: string, page = 1, limit = 50) {
     const skip = (page - 1) * limit;
-    return this.prisma.canonicalProduct.findMany({
+    const allProducts = await this.prisma.canonicalProduct.findMany({
       where: { category: { name: { equals: category } } },
       include: {
         productMatches: {
@@ -859,6 +859,23 @@ export class ScraperService {
       skip,
       take: limit,
       orderBy: { name: 'asc' },
+    });
+
+    return allProducts.map((p) => {
+      let lowestPrice = 0;
+      for (const match of p.productMatches) {
+        if (isPrivateLabel(p.name, match.supermarket.name)) continue;
+        const price = match.priceHistory[0]?.price || 0;
+        if (price > 0 && (lowestPrice === 0 || price < lowestPrice)) {
+          lowestPrice = price;
+        }
+      }
+      return {
+        id: p.id,
+        name: p.name,
+        imageUrl: p.defaultImageUrl || 'https://via.placeholder.com/150',
+        price: lowestPrice,
+      };
     });
   }
 
