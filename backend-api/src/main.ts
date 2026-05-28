@@ -23,6 +23,19 @@ async function bootstrap() {
     console.log('✅ Productos de chicharrón movidos a Despensa');
   }
 
+  const vegetales = await prisma.category.findFirst({ where: { name: 'Vegetales' } });
+  if (vegetales) {
+    await prisma.canonicalProduct.updateMany({
+      where: { name: { contains: 'ensalada' } },
+      data: { categoryId: vegetales.id }
+    });
+    await prisma.canonicalProduct.updateMany({
+      where: { name: { contains: 'espinaca' } },
+      data: { categoryId: vegetales.id }
+    });
+    console.log('✅ Ensaladas y espinacas movidas a Vegetales');
+  }
+
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
   console.log(`Backend running on http://0.0.0.0:3000`);
 }

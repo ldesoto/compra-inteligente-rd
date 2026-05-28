@@ -777,9 +777,14 @@ export class ScraperService {
 
     if (!canonical) {
       let finalCategoryId = categoryId;
-      if (normalizedName.toLowerCase().includes('chicharron') || normalizedName.toLowerCase().includes('chicharrón')) {
+      const lowerName = normalizedName.toLowerCase();
+      
+      if (lowerName.includes('chicharron') || lowerName.includes('chicharrón')) {
         const despensa = await this.prisma.category.findFirst({ where: { name: 'Despensa' } });
         if (despensa) finalCategoryId = despensa.id;
+      } else if (lowerName.includes('ensalada') || lowerName.includes('espinaca')) {
+        const vegetales = await this.prisma.category.findFirst({ where: { name: 'Vegetales' } });
+        if (vegetales) finalCategoryId = vegetales.id;
       }
 
       canonical = await this.prisma.canonicalProduct.create({
