@@ -349,6 +349,30 @@ export const ComparisonScreen = ({ navigation }: any) => {
                 </>
               )}
             </ScrollView>
+
+            <View style={{ paddingTop: 20, borderTopWidth: 1, borderTopColor: '#F1F5F9' }}>
+              <TouchableOpacity 
+                style={[styles.backHomeBtn, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }]} 
+                onPress={async () => {
+                  try {
+                    await useAppStore.getState().markListAsPurchased(
+                      comparisonResult.listId, 
+                      selectedStore.supermarketId || selectedStore.supermarketName, // fallback
+                      selectedStore.totalCost
+                    );
+                    setSelectedStore(null);
+                    Alert.alert('¡Éxito!', 'Compra confirmada y ahorros registrados.');
+                    navigation.navigate('Home');
+                  } catch (e) {
+                    Alert.alert('Error', 'No se pudo confirmar la compra.');
+                  }
+                }}
+              >
+                <Feather name="check-circle" size={20} color="#FFF" />
+                <Text style={styles.backHomeBtnText}>Confirmar Compra Aquí</Text>
+              </TouchableOpacity>
+            </View>
+
           </View>
         </View>
       </Modal>

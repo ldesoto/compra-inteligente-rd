@@ -140,6 +140,7 @@ export interface AppState {
   sendChatMessage: (prompt: string) => Promise<any>;
   scanReceipt: (imageBase64: string) => Promise<any>;
   fetchBudgetAnalysis: (listId: string) => Promise<any>;
+  markListAsPurchased: (listId: string, supermarketId: string, totalAmount: number) => Promise<any>;
   searchProducts: (query: string) => Promise<any[]>;
   fetchDashboardData: () => Promise<void>;
   fetchProductHistory: (productId: string) => Promise<any>;
@@ -637,6 +638,25 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
       console.warn('Budget API Error:', err.message);
       return { monthlyBudget: 0, totalEstimatedCost: 0, alerts: [], categorySpending: {} };
+    }
+  },
+
+  markListAsPurchased: async (listId: string, supermarketId: string, totalAmount: number) => {
+    try {
+      const res = await api.post(`/lists/${listId}/mark-purchased`, { supermarketId, totalAmount });
+      
+      const { currentList, lists } = get();
+      if (currentList && currentList.id === listId) {
+        set({ currentList: { ...currentList, status: 'PURCHASED' } });
+      }
+      const updatedLists = lists.map(l => l.id === listId ? { ...l, status: 'PURCHASED' } : l);
+      set({ lists: updatedLists });
+      
+      await get().fetchDashboardData();
+      return res.data;
+    } catch (err: any) {
+      console.error('Error marking list as purchased:', err?.message || err);
+      throw err;
     }
   },
 
