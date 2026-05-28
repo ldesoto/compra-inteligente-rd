@@ -10,30 +10,34 @@ async function bootstrap() {
     credentials: false,
   });
   const prisma = app.get(PrismaService);
+  const allProducts = await prisma.canonicalProduct.findMany({ select: { id: true, name: true, categoryId: true } });
+  let updatedCount = 0;
+
   const despensa = await prisma.category.findFirst({ where: { name: 'Despensa' } });
-  if (despensa) {
-    await prisma.canonicalProduct.updateMany({
-      where: { name: { contains: 'chicharron' } },
-      data: { categoryId: despensa.id }
-    });
-    await prisma.canonicalProduct.updateMany({
-      where: { name: { contains: 'chicharrón' } },
-      data: { categoryId: despensa.id }
-    });
-    console.log('✅ Productos de chicharrón movidos a Despensa');
+  const vegetales = await prisma.category.findFirst({ where: { name: 'Vegetales' } });
+
+  for (const p of allProducts) {
+    const lowerName = p.name.toLowerCase();
+    
+    // Fix Chicharron
+    if (despensa && (lowerName.includes('chicharron') || lowerName.includes('chicharrón'))) {
+      if (p.categoryId !== despensa.id) {
+        await prisma.canonicalProduct.update({ where: { id: p.id }, data: { categoryId: despensa.id } });
+        updatedCount++;
+      }
+    }
+    
+    // Fix Ensalada / Espinaca
+    if (vegetales && (lowerName.includes('ensalada') || lowerName.includes('espinaca'))) {
+      if (p.categoryId !== vegetales.id) {
+        await prisma.canonicalProduct.update({ where: { id: p.id }, data: { categoryId: vegetales.id } });
+        updatedCount++;
+      }
+    }
   }
 
-  const vegetales = await prisma.category.findFirst({ where: { name: 'Vegetales' } });
-  if (vegetales) {
-    await prisma.canonicalProduct.updateMany({
-      where: { name: { contains: 'ensalada' } },
-      data: { categoryId: vegetales.id }
-    });
-    await prisma.canonicalProduct.updateMany({
-      where: { name: { contains: 'espinaca' } },
-      data: { categoryId: vegetales.id }
-    });
-    console.log('✅ Ensaladas y espinacas movidas a Vegetales');
+  if (updatedCount > 0) {
+    console.log(`✅ Se corrigieron ${updatedCount} productos mal categorizados (Chicharrones, Ensaladas, Espinacas).`);
   }
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
