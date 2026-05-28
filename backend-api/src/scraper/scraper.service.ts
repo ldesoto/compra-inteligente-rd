@@ -227,7 +227,61 @@ const PLAZA_LAMA_CONFIG: SupermarketConfig = {
   ],
 };
 
-const ALL_CONFIGS: SupermarketConfig[] = [JUMBO_CONFIG, SIRENA_CONFIG, NACIONAL_CONFIG, PLAZA_LAMA_CONFIG];
+// ──────────────────────────────────────────────────────────────────────────────
+// BRAVO — Custom App / Web config
+// ──────────────────────────────────────────────────────────────────────────────
+const BRAVO_CONFIG: SupermarketConfig = {
+  name: 'Supermercado Bravo',
+  baseUrl: 'https://bravo.do',
+  needsJavaScript: true,
+  rateLimit: 3000,
+  selectors: {
+    productContainer: '.product-card, .vtex-product-summary-2-x-container, .item-card',
+    productName: '.product-title, .vtex-product-summary-2-x-productNameContainer, .name',
+    productPrice: '.product-price, .vtex-product-price-1-x-sellingPrice, .price',
+    productUrl: '.product-link, .vtex-product-summary-2-x-clearLink',
+  },
+  paginationUrl: (url, page) => `${url}?page=${page}`,
+  dynamicCategories: {
+    startUrl: 'https://bravo.do/categorias',
+    linkSelector: 'a',
+    urlFilter: (url) => url.includes('/c/') && url.length > 15,
+  },
+  categories: [
+    { categoryName: 'Arroz', dbCategoryName: 'Granos y Cereales', url: 'https://bravo.do/c/arroz', maxPages: 2 },
+    { categoryName: 'Carnes', dbCategoryName: 'Carnes', url: 'https://bravo.do/c/carnes', maxPages: 2 },
+    { categoryName: 'Lacteos', dbCategoryName: 'Lácteos', url: 'https://bravo.do/c/lacteos', maxPages: 2 },
+  ],
+};
+
+// ──────────────────────────────────────────────────────────────────────────────
+// CARREFOUR — VTEX / Magento config
+// ──────────────────────────────────────────────────────────────────────────────
+const CARREFOUR_CONFIG: SupermarketConfig = {
+  name: 'Carrefour',
+  baseUrl: 'https://mercado.carrefour.do',
+  needsJavaScript: true,
+  rateLimit: 3000,
+  selectors: {
+    productContainer: '.product-item, .vtex-product-summary-2-x-container',
+    productName: '.product-item-name, .vtex-product-summary-2-x-brandName',
+    productPrice: '.price, .vtex-selling-price-3-x-value',
+    productUrl: '.product-item-link, .vtex-product-summary-2-x-clearLink',
+  },
+  paginationUrl: (url, page) => `${url}?p=${page}`,
+  dynamicCategories: {
+    startUrl: 'https://mercado.carrefour.do/supermercado',
+    linkSelector: 'a',
+    urlFilter: (url) => url.includes('/c/') && !url.includes('?'),
+  },
+  categories: [
+    { categoryName: 'Vinos y Cervezas', dbCategoryName: 'Licores y Bebidas', url: 'https://mercado.carrefour.do/c/bebidas', maxPages: 2 },
+    { categoryName: 'Lácteos', dbCategoryName: 'Lácteos', url: 'https://mercado.carrefour.do/c/lacteos', maxPages: 2 },
+    { categoryName: 'Despensa', dbCategoryName: 'Despensa', url: 'https://mercado.carrefour.do/c/despensa', maxPages: 2 },
+  ],
+};
+
+const ALL_CONFIGS: SupermarketConfig[] = [JUMBO_CONFIG, SIRENA_CONFIG, NACIONAL_CONFIG, PLAZA_LAMA_CONFIG, BRAVO_CONFIG, CARREFOUR_CONFIG];
 
 @Injectable()
 export class ScraperService {
@@ -395,8 +449,12 @@ export class ScraperService {
     return this.cachedPromotions;
   }
 
-  async runDailyScraping(): Promise<{ success: boolean; productsScraped: number; errors: string[] }> {
-    this.logger.log('🕷️  Iniciando scraping diario completo de supermercados...');
+  async runDailyScraping(targetSupermarkets?: string[]): Promise<{ success: boolean; productsScraped: number; errors: string[] }> {
+    const configsToRun = targetSupermarkets && targetSupermarkets.length > 0
+      ? ALL_CONFIGS.filter(c => targetSupermarkets.some(t => c.name.toLowerCase().includes(t.toLowerCase())))
+      : ALL_CONFIGS;
+
+    this.logger.log(`🕷️  Iniciando scraping... (Objetivos: ${configsToRun.map(c => c.name).join(', ')})`);
     const errors: string[] = [];
     let totalScraped = 0;
 
@@ -406,12 +464,18 @@ export class ScraperService {
     });
 
     try {
-      for (const config of ALL_CONFIGS) {
+      for (const config of configsToRun) {
         this.logger.log(`\n📦 ═══ Iniciando ${config.name} ═══`);
-        const supermarket = await this.prisma.supermarket.findUnique({ where: { name: config.name } });
+        let supermarket = await this.prisma.supermarket.findUnique({ where: { name: config.name } });
         if (!supermarket) {
-          errors.push(`Supermercado "${config.name}" no existe en BD`);
-          continue;
+          this.logger.log(`  ➕ Creando nuevo supermercado: ${config.name}`);
+          supermarket = await this.prisma.supermarket.create({
+            data: { 
+              name: config.name, 
+              logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(config.name)}&background=random&color=fff&size=200`,
+              isActive: true
+            }
+          });
         }
 
         let categoriesToScrape = [...config.categories];
@@ -783,7 +847,7 @@ export class ScraperService {
   async getProductsByCategory(category: string, page = 1, limit = 50) {
     const skip = (page - 1) * limit;
     return this.prisma.canonicalProduct.findMany({
-      where: { category: { name: { contains: category } } },
+      where: { category: { name: { equals: category } } },
       include: {
         productMatches: {
           include: {
@@ -798,10 +862,18 @@ export class ScraperService {
     });
   }
 
-  async searchProducts(query: string) {
+  async searchProducts(query: string, categoryFilter?: string) {
+    const normalize = (str: string) => str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '';
+    const normQuery = normalize(query);
+    const normCategory = categoryFilter ? normalize(categoryFilter) : null;
+
     const allProducts = await this.prisma.canonicalProduct.findMany({
       orderBy: { name: 'asc' },
+      where: categoryFilter
+        ? { category: { name: { equals: categoryFilter } } }
+        : undefined,
       include: {
+        category: true,
         productMatches: {
           include: {
             supermarket: true,
@@ -810,11 +882,14 @@ export class ScraperService {
         },
       },
     });
-    const lowerQuery = query.toLowerCase();
-    
+
     return allProducts
-      .filter((p) => p.name.toLowerCase().includes(lowerQuery))
-      .slice(0, 20)
+      .filter((p) => {
+        const normName = normalize(p.name);
+        // Search only by product name (category is already pre-filtered above)
+        return normName.includes(normQuery);
+      })
+      .slice(0, 100)
       .map((p) => {
         // Find the lowest price among matches
         let lowestPrice = 0;

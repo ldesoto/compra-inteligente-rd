@@ -1,16 +1,30 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '../store/useAppStore';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BottomTabBar } from '../components/BottomTabBar';
+import { PremiumCard } from '../components/PremiumCard';
+import { PremiumButton } from '../components/PremiumButton';
+import { InsightCard } from '../components/InsightCard';
+import { themeColors, themeLayout, themeShadows, themeTypography } from '../theme/DesignSystem';
 import api from '../services/api';
 
-const { width } = Dimensions.get('window');
-
 export const HomeScreen = ({ navigation }: any) => {
-  const { currentList, comparisonResult, offers, alerts, user, promotions, fetchLists, fetchDashboardData, fetchBudgetAnalysis, darkMode, language } = useAppStore();
+  const { 
+    currentList, 
+    offers, 
+    alerts, 
+    fetchLists, 
+    fetchDashboardData, 
+    fetchBudgetAnalysis, 
+    darkMode, 
+    language, 
+    lists, 
+    isPremium 
+  } = useAppStore();
+
   const [clippedOffers, setClippedOffers] = React.useState<number[]>([]);
   const [isScraping, setIsScraping] = React.useState(false);
   const [budgetData, setBudgetData] = React.useState<any>(null);
@@ -26,23 +40,12 @@ export const HomeScreen = ({ navigation }: any) => {
     }
   }, [currentList]);
 
+  const colors = darkMode ? themeColors.dark : themeColors.light;
+
   const globalBudget = budgetData?.monthlyBudget || 0;
   const globalSpent = budgetData?.totalEstimatedCost || 0;
   const remainingBudget = globalBudget > 0 ? (globalBudget - globalSpent) : 0;
   const isOverBudget = remainingBudget < 0;
-
-  const forceScrape = async () => {
-    setIsScraping(true);
-    try {
-      await api.get('/promotions/force');
-      await fetchDashboardData(); // Refresca los datos en la app
-    } catch (err) {
-      console.warn('Error al forzar scraping', err);
-    }
-    setIsScraping(false);
-  };
-
-  const unreadAlerts = alerts.filter(a => !a.read).length;
 
   const toggleClip = (id: number) => {
     if (clippedOffers.includes(id)) {
@@ -69,65 +72,34 @@ export const HomeScreen = ({ navigation }: any) => {
     seeAll: language === 'Inglés' ? 'See all' : 'Ver todo'
   };
 
-  const theme = {
-    bg: darkMode ? '#0F172A' : '#FAFAFA',
-    text: darkMode ? '#F8FAFC' : '#0F172A',
-    textMuted: darkMode ? '#94A3B8' : '#64748B',
-    card: darkMode ? '#1E293B' : '#FFFFFF',
-    border: darkMode ? '#334155' : '#E2E8F0',
-    scanBg: darkMode ? '#064E3B' : '#F0FDF4',
-    scanText: darkMode ? '#ECFDF5' : '#064E3B'
-  };
-
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
-        {/* Flipp Style Top Bar Header */}
-        <View style={styles.topBar}>
-          <View style={{ width: 30 }} />
-
+        {/* Top Bar Header */}
+        <View style={[styles.topBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
           <Image
             source={require('../../assets/logoHome.png')}
-            style={{ height: 150, width: 290, resizeMode: 'contain', marginVertical: -60 }}
+            style={styles.logo}
           />
-
-          <TouchableOpacity
-            style={[styles.topBarRight, { width: 30, justifyContent: 'flex-end' }]}
-            onPress={() => navigation.navigate('Profile')}
-          >
-            <Feather name="user" size={24} color="#64748B" />
-          </TouchableOpacity>
         </View>
 
-
-
-
-
-        {/* Hero Card - Ahorro Total */}
+        {/* Hero Card - Presupuesto disponible */}
         <View style={styles.heroWrapper}>
-          <LinearGradient
-            colors={['#047857', '#10B981']}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            style={styles.heroCard}
-          >
-            {/* Background Graphic 1: Big Arrow */}
-            <View style={{ position: 'absolute', right: -30, top: -20, opacity: 0.15 }}>
-              <Feather name="trending-up" size={180} color="#FFFFFF" style={{ transform: [{ rotate: '15deg' }] }} />
-            </View>
-
-            {/* Background Graphic 2: Floating sparkles */}
-            <View style={{ position: 'absolute', right: 80, bottom: 20, opacity: 0.25 }}>
-              <Ionicons name="sparkles" size={40} color="#FFFFFF" />
+          <PremiumCard gradient="savings" style={styles.heroCard}>
+            {/* Visual graphics */}
+            <View style={styles.heroGraphicWrapper}>
+              <Feather name="trending-up" size={170} color="#FFFFFF" style={styles.heroGraphic} />
             </View>
 
             <View style={styles.heroContent}>
               <Text style={styles.heroLabel}>{t.budget}</Text>
-              <Text style={styles.heroValue}>RD$ {remainingBudget.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+              <Text style={styles.heroValue}>
+                RD$ {remainingBudget.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Text>
 
-              <View style={[styles.heroTrendBadge, isOverBudget && { backgroundColor: 'rgba(239,68,68,0.8)' }]}>
-                {!isOverBudget && <Feather name="check-circle" size={14} color="#FFFFFF" />}
-                {isOverBudget && <Feather name="alert-circle" size={14} color="#FFFFFF" />}
+              <View style={[styles.heroTrendBadge, isOverBudget && { backgroundColor: 'rgba(239, 68, 68, 0.85)' }]}>
+                <Feather name={isOverBudget ? 'alert-circle' : 'check-circle'} size={14} color="#FFFFFF" />
                 <Text style={styles.heroTrendText}>
                   {isOverBudget
                     ? "Has excedido tu presupuesto"
@@ -135,150 +107,215 @@ export const HomeScreen = ({ navigation }: any) => {
                 </Text>
               </View>
 
-              <TouchableOpacity style={styles.heroBtn} onPress={() => navigation.navigate('BudgetDashboard')}>
+              <TouchableOpacity 
+                activeOpacity={0.9} 
+                style={styles.heroBtn} 
+                onPress={() => navigation.navigate('BudgetDashboard')}
+              >
                 <Text style={styles.heroBtnText}>Ver detalles</Text>
                 <Feather name="chevron-right" size={18} color="#047857" />
               </TouchableOpacity>
             </View>
-          </LinearGradient>
+          </PremiumCard>
         </View>
 
+        {/* Quick Actions Row */}
         <View style={styles.quickActionsRow}>
-          <TouchableOpacity style={styles.quickActionBtn} onPress={() => navigation.navigate('CreateList')}>
-            <LinearGradient colors={['#F8FAFC', '#F1F5F9']} style={styles.actionIconBox}>
-              <Ionicons name="document-text" size={24} color="#0F172A" />
-            </LinearGradient>
-            <Text style={[styles.actionLabel, { color: theme.textMuted }]}>{t.newList}</Text>
+          {/* Nueva Lista */}
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            style={styles.quickActionBtn} 
+            onPress={() => {
+              if (lists.length >= 3 && !isPremium) {
+                navigation.navigate('Premium');
+              } else {
+                navigation.navigate('CreateList');
+              }
+            }}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Ionicons name="document-text" size={24} color={colors.textPrimary} />
+            </View>
+            <Text style={[styles.actionLabel, { color: colors.textSecondary }]}>{t.newList}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.quickActionBtn} onPress={() => navigation.navigate('Comparison')}>
-            <LinearGradient colors={['#F8FAFC', '#F1F5F9']} style={styles.actionIconBox}>
-              <Ionicons name="swap-horizontal" size={24} color="#0F172A" />
-            </LinearGradient>
-            <Text style={[styles.actionLabel, { color: theme.textMuted }]}>{t.compare}</Text>
+
+          {/* Comparar */}
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            style={styles.quickActionBtn} 
+            onPress={() => navigation.navigate('Comparison')}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Ionicons name="swap-horizontal" size={24} color={colors.textPrimary} />
+            </View>
+            <Text style={[styles.actionLabel, { color: colors.textSecondary }]}>{t.compare}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.quickActionBtn} onPress={() => Alert.alert('Próximamente', 'La sección de Ofertas estará disponible muy pronto.')}>
-            <LinearGradient colors={['#F8FAFC', '#F1F5F9']} style={styles.actionIconBox}>
-              <Ionicons name="pricetag" size={24} color="#0F172A" />
-            </LinearGradient>
-            <Text style={[styles.actionLabel, { color: theme.textMuted }]}>{t.offers}</Text>
+
+          {/* Ofertas */}
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            style={styles.quickActionBtn} 
+            onPress={() => navigation.navigate('Alerts')}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Ionicons name="pricetag" size={24} color={colors.textPrimary} />
+            </View>
+            <Text style={[styles.actionLabel, { color: colors.textSecondary }]}>{t.offers}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.quickActionBtn} onPress={() => navigation.navigate('InflationDashboard')}>
-            <LinearGradient colors={['#F8FAFC', '#F1F5F9']} style={styles.actionIconBox}>
-              <Ionicons name="trending-up" size={24} color="#0F172A" />
-            </LinearGradient>
-            <Text style={[styles.actionLabel, { color: theme.textMuted }]}>{t.inflation}</Text>
+
+          {/* Inflación */}
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            style={styles.quickActionBtn} 
+            onPress={() => navigation.navigate('InflationDashboard')}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Ionicons name="trending-up" size={24} color={colors.textPrimary} />
+            </View>
+            <Text style={[styles.actionLabel, { color: colors.textSecondary }]}>{t.inflation}</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Banner: Escanear Factura (Cashback/Ahorro pasivo) */}
+        {/* Banner: Escanear Factura (OCR) */}
         <View style={styles.scanBannerWrapper}>
-          <View style={[styles.scanBanner, { backgroundColor: '#F4FBF7' }]}>
-            <View style={styles.scanIconCircle}>
-              <Ionicons name="document-text-outline" size={24} color="#059669" />
-              <View style={styles.scanCheckBadge}><Ionicons name="camera" size={10} color="#FFF" /></View>
+          <PremiumCard 
+            gradient="softCard"
+            style={styles.scanBanner}
+          >
+            <View style={[styles.scanIconCircle, { backgroundColor: colors.surface }]}>
+              <Ionicons name="document-text-outline" size={24} color={colors.primary} />
+              <View style={[styles.scanCheckBadge, { backgroundColor: colors.primary, borderColor: colors.surface }]}>
+                <Ionicons name="camera" size={10} color="#FFFFFF" />
+              </View>
             </View>
             <View style={styles.scanTextCol}>
-              <Text style={styles.scanTitle}>Escanea tu factura</Text>
-              <Text style={styles.scanSubtitle}>Sube tu factura y descubre cuánto podrías haber ahorrado.</Text>
+              <Text style={[styles.scanTitle, { color: colors.textPrimary }]}>Escanea tu factura</Text>
+              <Text style={[styles.scanSubtitle, { color: colors.textSecondary }]}>
+                Sube tu factura y descubre cuánto podrías haber ahorrado.
+              </Text>
             </View>
-            <TouchableOpacity style={styles.scanBtn} onPress={() => navigation.navigate('Scanner')}>
-              <Text style={styles.scanBtnText}>Escanear ahora</Text>
+            <TouchableOpacity 
+              activeOpacity={0.85} 
+              style={[styles.scanBtn, { backgroundColor: colors.primary }]} 
+              onPress={() => navigation.navigate('Scanner')}
+            >
+              <Text style={styles.scanBtnText}>Escanear</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.scanDecorativeCircle} onPress={() => navigation.navigate('Scanner')}>
-              <Ionicons name="scan" size={18} color="#059669" />
-            </TouchableOpacity>
-          </View>
+          </PremiumCard>
         </View>
 
         {/* Banner: Premium */}
-        <TouchableOpacity style={styles.premiumBannerWrapper} onPress={() => navigation.navigate('Premium')}>
-          <LinearGradient colors={['#F5F3FF', '#EDE9FE']} style={styles.premiumBanner}>
-            <View style={styles.premiumContent}>
-              <Text style={styles.premiumTitle}>Pasa a <Text style={{ color: '#7C3AED' }}>Premium</Text></Text>
-              <Text style={styles.premiumDesc}>Desbloquea alertas ilimitadas, historial completo, IA inteligente y mucho más.</Text>
-              <View style={styles.premiumBtnRow}>
-                <Text style={styles.premiumBtnText}>Ver planes</Text>
-                <Feather name="chevron-right" size={16} color="#7C3AED" />
+        {!isPremium && (
+          <View style={styles.premiumBannerWrapper}>
+            <PremiumCard 
+              gradient="premium" 
+              style={styles.premiumBanner} 
+              onPress={() => navigation.navigate('Premium')}
+            >
+              <View style={styles.premiumContent}>
+                <Text style={styles.premiumTitle}>Pasa a Premium ✨</Text>
+                <Text style={styles.premiumDesc}>
+                  Desbloquea alertas ilimitadas, historial completo de tendencias e inteligencia artificial de ahorro.
+                </Text>
+                <View style={styles.premiumBtnRow}>
+                  <Text style={styles.premiumBtnText}>Ver planes</Text>
+                  <Feather name="chevron-right" size={16} color="#FFFFFF" />
+                </View>
               </View>
-            </View>
-            <View style={styles.premiumIconCol}>
-              <View style={styles.premiumIconCircle}>
-                <MaterialCommunityIcons name="crown" size={42} color="#8B5CF6" />
-                <Ionicons name="sparkles" size={16} color="#C4B5FD" style={styles.premiumSparkle1} />
-                <Ionicons name="sparkles" size={12} color="#C4B5FD" style={styles.premiumSparkle2} />
+              <View style={styles.premiumIconCol}>
+                <View style={styles.premiumIconCircle}>
+                  <MaterialCommunityIcons name="crown" size={38} color="#FFFFFF" />
+                </View>
               </View>
-            </View>
-          </LinearGradient>
-        </TouchableOpacity>
+            </PremiumCard>
+          </View>
+        )}
 
-        {/* Ofertas que te convienen */}
         {/* Ofertas que te convienen */}
         <View style={styles.sectionContainer}>
           {offers.length > 0 ? (
             <>
               <View style={styles.sectionHeader}>
                 <View>
-                  <Text style={styles.sectionTitle}>Folleto de Ofertas Semanales 📰</Text>
-                  <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>Toca un producto para recortarlo (Flipp Style)</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Folleto de Ofertas Semanales 📰</Text>
+                  <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>Toca un producto para recortarlo (Flipp Style)</Text>
                 </View>
                 <TouchableOpacity onPress={() => navigation.navigate('Alerts')}>
-                  <Text style={styles.seeAllText}>Ver todas</Text>
+                  <Text style={[styles.seeAllText, { color: colors.primary }]}>Ver todas</Text>
                 </TouchableOpacity>
               </View>
 
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dealsScroll}>
                 {offers.map((deal: any, i: number) => {
-                  let color = '#94A3B8';
-                  if (deal.store?.toLowerCase().includes('jumbo')) color = '#00B2A9';
-                  if (deal.store?.toLowerCase().includes('sirena')) color = '#EF4444';
-                  if (deal.store?.toLowerCase().includes('bravo')) color = '#3B82F6';
+                  let storeColor = colors.primary;
+                  if (deal.store?.toLowerCase().includes('jumbo')) storeColor = '#00B2A9';
+                  if (deal.store?.toLowerCase().includes('sirena')) storeColor = '#EF4444';
+                  if (deal.store?.toLowerCase().includes('bravo')) storeColor = '#3B82F6';
 
                   const isClipped = clippedOffers.includes(i);
 
                   return (
-                    <TouchableOpacity key={i} activeOpacity={0.8} onPress={() => toggleClip(i)} style={styles.dealCard}>
-                      <View style={styles.dealDiscountPill}>
+                    <PremiumCard 
+                      key={i} 
+                      onPress={() => toggleClip(i)} 
+                      style={styles.dealCard}
+                      variant="surface"
+                    >
+                      <View style={[styles.dealDiscountPill, { backgroundColor: colors.warning }]}>
                         <Text style={styles.dealDiscountText}>-{deal.discount}%</Text>
                       </View>
-                      <View style={[styles.dealImageBox, isClipped && styles.clippedCircleBorder]}>
+                      
+                      <View style={styles.dealImageBox}>
                         {isClipped ? (
-                          <View style={styles.clipCheckOverlay}>
+                          <View style={[styles.clipCheckOverlay, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
                             <Feather name="check" size={24} color="#FFFFFF" />
                           </View>
                         ) : (
-                          <Feather name="tag" size={40} color={color} opacity={0.5} />
+                          <Feather name="tag" size={40} color={storeColor} style={{ opacity: 0.4 }} />
                         )}
                       </View>
-                      <Text style={styles.dealProduct} numberOfLines={1}>{deal.product}</Text>
-                      <Text style={[styles.dealStore, { color }]}>{deal.store}</Text>
+
+                      <Text style={[styles.dealProduct, { color: colors.textPrimary }]} numberOfLines={1}>
+                        {deal.product}
+                      </Text>
+                      <Text style={[styles.dealStore, { color: storeColor }]}>
+                        {deal.store}
+                      </Text>
 
                       <View style={styles.dealPriceRow}>
-                        <Text style={styles.dealPrice}>RD$ {deal.price.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                        <Text style={styles.dealOldPrice}>RD$ {deal.old.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                        <Text style={[styles.dealPrice, { color: colors.primary }]}>
+                          RD$ {deal.price.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </Text>
+                        <Text style={[styles.dealOldPrice, { color: colors.textLight }]}>
+                          RD$ {deal.old.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </Text>
                       </View>
 
-                      <View style={[styles.clipBadge, { backgroundColor: isClipped ? '#00B2A9' : '#F1F5F9' }]}>
-                        <Text style={[styles.clipBadgeText, { color: isClipped ? '#FFFFFF' : '#64748B' }]}>
+                      <View style={[styles.clipBadge, { backgroundColor: isClipped ? colors.primary : colors.surfaceAlt }]}>
+                        <Text style={[styles.clipBadgeText, { color: isClipped ? '#FFFFFF' : colors.textMuted }]}>
                           {isClipped ? '¡Recortado!' : 'Recortar'}
                         </Text>
                       </View>
-                    </TouchableOpacity>
+                    </PremiumCard>
                   );
                 })}
               </ScrollView>
             </>
           ) : (
-            <View style={styles.emptyOffersContainer}>
-              <View style={styles.emptyOffersIconBox}>
-                <Ionicons name="pricetags-outline" size={32} color="#00B2A9" />
+            <View style={[styles.emptyOffersContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={[styles.emptyOffersIconBox, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name="pricetags-outline" size={32} color={colors.primary} />
               </View>
-              <Text style={styles.emptyOffersTitle}>Cazando ofertas...</Text>
-              <Text style={styles.emptyOffersDesc}>
+              <Text style={[styles.emptyOffersTitle, { color: colors.textPrimary }]}>Cazando ofertas...</Text>
+              <Text style={[styles.emptyOffersDesc, { color: colors.textSecondary }]}>
                 Estamos escaneando los folletos de esta semana para traerte los mejores recortes. ¡Vuelve pronto!
               </Text>
-              <TouchableOpacity style={styles.emptyOffersBtn} onPress={() => Alert.alert('Notificaciones', 'Te avisaremos cuando haya ofertas nuevas.')}>
-                <Text style={styles.emptyOffersBtnText}>Avisarme cuando estén listas</Text>
-              </TouchableOpacity>
+              <PremiumButton 
+                title="Avisarme cuando estén listas" 
+                onPress={() => Alert.alert('Notificaciones', 'Te avisaremos cuando haya ofertas nuevas.')}
+                variant="primary"
+                style={{ width: '100%', height: 48 }}
+              />
             </View>
           )}
         </View>
@@ -289,104 +326,129 @@ export const HomeScreen = ({ navigation }: any) => {
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FFFFFF' },
-  scroll: { paddingBottom: 20 },
-
-  greetingContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+  safe: { 
+    flex: 1, 
   },
-  greetingText: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#0F172A',
-    marginBottom: 4,
+  scroll: { 
+    paddingBottom: 20 
   },
-  greetingSubtext: {
-    fontSize: 15,
-    color: '#64748B',
-    fontWeight: '500',
+  logo: { 
+    height: 150, 
+    width: 290, 
+    resizeMode: 'contain', 
+    marginVertical: -60 
   },
-
-  // Flipp Style Header & Tabs
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 20,
     paddingTop: 4,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-    backgroundColor: '#FFFFFF',
   },
-  topBarLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  heroWrapper: { 
+    paddingHorizontal: 20, 
+    marginTop: 20, 
+    marginBottom: 28 
   },
-  topBarLeftText: {
-    fontSize: 13,
-    color: '#00B2A9',
-    fontWeight: '700',
-  },
-  flippLogo: {
-    fontSize: 22,
-    color: '#00B2A9',
-    fontFamily: 'System',
-    fontWeight: '800',
-    letterSpacing: -1,
-  },
-  topBarRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  topBarRightText: {
-    fontSize: 13,
-    color: '#64748B',
-    fontWeight: '700',
-  },
-
-
-  heroWrapper: { paddingHorizontal: 20, marginTop: 16, marginBottom: 28 },
   heroCard: {
-    borderRadius: 28, padding: 28,
-    shadowColor: '#047857', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.25, shadowRadius: 24, elevation: 8,
-    flexDirection: 'row', overflow: 'hidden'
+    padding: themeLayout.spacing.xl,
+    overflow: 'hidden',
   },
-  heroContent: { flex: 1, zIndex: 2 },
-  heroLabel: { color: 'rgba(255,255,255,0.95)', fontSize: 15, fontWeight: '600', marginBottom: 6 },
-  heroValue: { color: '#FFFFFF', fontSize: 40, fontWeight: '900', marginBottom: 16, letterSpacing: -1 },
+  heroGraphicWrapper: {
+    position: 'absolute', 
+    right: -25, 
+    top: -15, 
+    opacity: 0.16 
+  },
+  heroGraphic: {
+    transform: [{ rotate: '15deg' }]
+  },
+  heroContent: { 
+    zIndex: 2 
+  },
+  heroLabel: { 
+    color: 'rgba(255, 255, 255, 0.95)', 
+    fontSize: themeTypography.fontSizes.sm, 
+    fontWeight: '600', 
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  heroValue: { 
+    color: '#FFFFFF', 
+    fontSize: themeTypography.fontSizes.huge, 
+    fontWeight: '900', 
+    marginBottom: 16, 
+    letterSpacing: -1 
+  },
   heroTrendBadge: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.25)',
-    alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, marginBottom: 24, gap: 6
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    alignSelf: 'flex-start', 
+    paddingHorizontal: 12, 
+    paddingVertical: 6, 
+    borderRadius: themeLayout.borderRadius.md, 
+    marginBottom: 24, 
+    gap: 6
   },
-  heroTrendText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  heroTrendText: { 
+    color: '#FFFFFF', 
+    fontSize: themeTypography.fontSizes.xs, 
+    fontWeight: '700' 
+  },
   heroBtn: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', alignSelf: 'flex-start',
-    paddingHorizontal: 20, paddingVertical: 12, borderRadius: 24, gap: 4,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#FFFFFF', 
+    alignSelf: 'flex-start',
+    paddingHorizontal: 20, 
+    paddingVertical: 12, 
+    borderRadius: themeLayout.borderRadius.round, 
+    gap: 4,
+    ...themeShadows.soft,
   },
-  heroBtnText: { color: '#047857', fontSize: 15, fontWeight: '800' },
-
+  heroBtnText: { 
+    color: '#047857', 
+    fontSize: themeTypography.fontSizes.sm, 
+    fontWeight: '800' 
+  },
   quickActionsRow: {
-    flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 32
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 20, 
+    marginBottom: 32
   },
-  quickActionBtn: { alignItems: 'center', width: 75 },
+  quickActionBtn: { 
+    alignItems: 'center', 
+    width: 76 
+  },
   actionIconBox: {
-    width: 60, height: 60, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 10,
-    shadowColor: '#0F172A', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 5,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.6)'
+    width: 62, 
+    height: 62, 
+    borderRadius: themeLayout.borderRadius.xl, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginBottom: 10,
+    borderWidth: 1.5,
+    ...themeShadows.soft,
   },
-  actionLabel: { fontSize: 13, color: '#334155', textAlign: 'center', fontWeight: '700', letterSpacing: -0.3 },
-
-  scanBannerWrapper: { paddingHorizontal: 20, marginBottom: 20 },
+  actionLabel: { 
+    fontSize: themeTypography.fontSizes.xs, 
+    textAlign: 'center', 
+    fontWeight: '700', 
+    letterSpacing: -0.3 
+  },
+  scanBannerWrapper: { 
+    paddingHorizontal: 20, 
+    marginBottom: 24 
+  },
   scanBanner: {
-    backgroundColor: '#F4FBF7',
-    borderRadius: 20,
-    padding: 16,
+    padding: themeLayout.spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -394,116 +456,171 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    ...themeShadows.soft,
   },
   scanCheckBadge: {
     position: 'absolute',
     bottom: -2,
     right: -2,
-    backgroundColor: '#047857',
     width: 20,
     height: 20,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#F4FBF7',
   },
-  scanTextCol: { flex: 1, marginRight: 8 },
-  scanTitle: { fontSize: 15, fontWeight: '800', color: '#0F172A', marginBottom: 2 },
-  scanSubtitle: { fontSize: 11, color: '#047857', lineHeight: 14, paddingRight: 4 },
+  scanTextCol: { 
+    flex: 1, 
+    marginRight: 8 
+  },
+  scanTitle: { 
+    fontSize: themeTypography.fontSizes.md, 
+    fontWeight: '800', 
+    marginBottom: 2 
+  },
+  scanSubtitle: { 
+    fontSize: themeTypography.fontSizes.xs, 
+    lineHeight: 16, 
+    paddingRight: 4 
+  },
   scanBtn: {
-    backgroundColor: '#047857',
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 16,
-    marginRight: 8,
+    borderRadius: themeLayout.borderRadius.md,
   },
-  scanBtnText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
-  scanDecorativeCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
+  scanBtnText: { 
+    color: '#FFFFFF', 
+    fontSize: 12, 
+    fontWeight: '800' 
   },
-
-  premiumBannerWrapper: { paddingHorizontal: 20, marginBottom: 32 },
+  premiumBannerWrapper: { 
+    paddingHorizontal: 20, 
+    marginBottom: 32 
+  },
   premiumBanner: {
-    borderRadius: 24,
-    padding: 20,
+    padding: themeLayout.spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  premiumContent: { flex: 1, marginRight: 16 },
-  premiumTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A', marginBottom: 8 },
-  premiumDesc: { fontSize: 13, color: '#4C1D95', lineHeight: 18, marginBottom: 12, opacity: 0.8 },
-  premiumBtnRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  premiumBtnText: { color: '#7C3AED', fontSize: 14, fontWeight: '700' },
-  premiumIconCol: { justifyContent: 'center', alignItems: 'center' },
+  premiumContent: { 
+    flex: 1, 
+    marginRight: 16 
+  },
+  premiumTitle: { 
+    fontSize: themeTypography.fontSizes.lg, 
+    fontWeight: '800', 
+    color: '#FFFFFF', 
+    marginBottom: 6 
+  },
+  premiumDesc: { 
+    fontSize: themeTypography.fontSizes.sm, 
+    color: 'rgba(255,255,255,0.85)', 
+    lineHeight: 18, 
+    marginBottom: 12 
+  },
+  premiumBtnRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 4 
+  },
+  premiumBtnText: { 
+    color: '#FFFFFF', 
+    fontSize: themeTypography.fontSizes.sm, 
+    fontWeight: '700' 
+  },
+  premiumIconCol: { 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
   premiumIconCircle: {
-    width: 80, height: 80, borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.4)',
-    justifyContent: 'center', alignItems: 'center',
+    width: 68, 
+    height: 68, 
+    borderRadius: 34,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    justifyContent: 'center', 
+    alignItems: 'center',
   },
-  premiumSparkle1: { position: 'absolute', top: 10, right: 10 },
-  premiumSparkle2: { position: 'absolute', bottom: 15, left: 10 },
-
-  sectionContainer: { marginBottom: 32 },
+  sectionContainer: { 
+    marginBottom: 32 
+  },
   sectionHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 20, marginBottom: 16
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    paddingHorizontal: 20, 
+    marginBottom: 16
   },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#0F172A' },
-  seeAllText: { fontSize: 14, color: '#00B2A9', fontWeight: '600' },
-  editBtnText: { fontSize: 14, color: '#00B2A9', fontWeight: '600' },
-
-
-  dealsScroll: { paddingHorizontal: 20, gap: 16 },
+  sectionTitle: { 
+    fontSize: themeTypography.fontSizes.lg, 
+    fontWeight: '800' 
+  },
+  seeAllText: { 
+    fontSize: themeTypography.fontSizes.sm, 
+    fontWeight: '700' 
+  },
+  dealsScroll: { 
+    paddingHorizontal: 20, 
+    gap: 16 
+  },
   dealCard: {
-    width: 140, backgroundColor: '#FFFFFF', borderRadius: 24, padding: 16,
-    borderWidth: 1, borderColor: '#F1F5F9',
-    shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2
+    width: 150, 
+    padding: themeLayout.spacing.md,
+    borderWidth: 1, 
+    ...themeShadows.soft,
   },
   dealDiscountPill: {
-    position: 'absolute', top: 12, right: 12, backgroundColor: '#F59E0B',
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, zIndex: 1
+    position: 'absolute', 
+    top: 10, 
+    right: 10, 
+    paddingHorizontal: 8, 
+    paddingVertical: 4, 
+    borderRadius: themeLayout.borderRadius.sm, 
+    zIndex: 2
   },
-  dealDiscountText: { color: '#FFF', fontSize: 11, fontWeight: '800' },
-  dealImageBox: { height: 80, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  dealProduct: { fontSize: 13, fontWeight: '700', color: '#0F172A', marginBottom: 4 },
-  dealStore: { fontSize: 11, fontWeight: '600', marginBottom: 8 },
-  dealPriceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginBottom: 8 },
-  dealPrice: { fontSize: 16, fontWeight: '800', color: '#00B2A9' },
-  dealOldPrice: { fontSize: 11, color: '#94A3B8', textDecorationLine: 'line-through' },
-
-  // Flipp Style Clip Effects
-  clippedCircleBorder: {
-    borderWidth: 2,
-    borderColor: '#00B2A9',
-    borderStyle: 'dashed',
-    borderRadius: 40,
-    width: 80,
-    height: 80,
-    alignSelf: 'center',
+  dealDiscountText: { 
+    color: '#FFFFFF', 
+    fontSize: 10, 
+    fontWeight: '800' 
+  },
+  dealImageBox: { 
+    height: 80, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginBottom: 12 
+  },
+  dealProduct: { 
+    fontSize: themeTypography.fontSizes.sm, 
+    fontWeight: '700', 
+    marginBottom: 4 
+  },
+  dealStore: { 
+    fontSize: 11, 
+    fontWeight: '700', 
+    marginBottom: 8 
+  },
+  dealPriceRow: { 
+    flexDirection: 'row', 
+    alignItems: 'baseline', 
+    gap: 6, 
+    marginBottom: 8 
+  },
+  dealPrice: { 
+    fontSize: themeTypography.fontSizes.md, 
+    fontWeight: '800' 
+  },
+  dealOldPrice: { 
+    fontSize: 10, 
+    textDecorationLine: 'line-through' 
   },
   clipCheckOverlay: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#00B2A9',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#00B2A9',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -511,7 +628,7 @@ const styles = StyleSheet.create({
   },
   clipBadge: {
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: themeLayout.borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
@@ -520,16 +637,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
-
-  // Empty State Offers
   emptyOffersContainer: {
     marginHorizontal: 20,
     padding: 24,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    borderRadius: themeLayout.borderRadius.xl,
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderWidth: 2,
     borderStyle: 'dashed',
     marginTop: 8,
   },
@@ -537,39 +650,20 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#F0FDFA',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
   emptyOffersTitle: {
-    fontSize: 18,
+    fontSize: themeTypography.fontSizes.lg,
     fontWeight: '800',
-    color: '#0F172A',
     marginBottom: 8,
   },
   emptyOffersDesc: {
-    fontSize: 13,
-    color: '#64748B',
+    fontSize: themeTypography.fontSizes.sm,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
     paddingHorizontal: 12,
   },
-  emptyOffersBtn: {
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  emptyOffersBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-  }
 });

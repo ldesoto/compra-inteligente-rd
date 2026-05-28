@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Platform, Alert } from 'react-native';
 
-// Utilizando la nueva IP local de la máquina (cambió la red)
-const baseURL = 'http://192.168.202.35:3000';
+// Conexión al servidor de producción en Render
+const baseURL = 'http://10.0.0.43:3000'; // Apuntando al backend local para pruebas
 
 const api = axios.create({
   baseURL,

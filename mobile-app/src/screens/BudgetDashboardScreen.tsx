@@ -2,11 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../store/useAppStore';
+import { PremiumCard } from '../components/PremiumCard';
+import { themeColors, themeLayout, themeShadows, themeTypography } from '../theme/DesignSystem';
 
 export default function BudgetDashboardScreen({ navigation }: any) {
-  const { fetchBudgetAnalysis, currentList } = useAppStore();
+  const { fetchBudgetAnalysis, currentList, darkMode } = useAppStore();
+  const colors = darkMode ? themeColors.dark : themeColors.light;
+
   const [loading, setLoading] = useState(true);
   const [budgetData, setBudgetData] = useState<any>(null);
 
@@ -28,8 +32,8 @@ export default function BudgetDashboardScreen({ navigation }: any) {
 
   if (loading || !budgetData) {
     return (
-      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#10B981" />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
@@ -38,143 +42,308 @@ export default function BudgetDashboardScreen({ navigation }: any) {
   const globalSpent = budgetData.totalEstimatedCost || 0;
   const globalPercent = globalBudget > 0 ? Math.min((globalSpent / globalBudget) * 100, 100) : 0;
 
-  // Mapeamos el objeto categorySpending a un array para la UI
+  // Map categorySpending object to array for UI
   const categories = Object.keys(budgetData.categorySpending || {}).map(catName => {
     const spent = budgetData.categorySpending[catName];
-    // Para MVP, obtenemos el budget desde la DB si estuviera mapeado o usamos 0
     const budget = budgetData.categoryBudgets?.[catName] || 0; 
     return {
       name: catName,
       budget,
       spent,
-      icon: 'basket',
-      color: (budget > 0 && spent > budget) ? '#EF4444' : '#3B82F6',
+      icon: 'basket-outline',
+      color: (budget > 0 && spent > budget) ? colors.danger : colors.info,
       overBudget: budget > 0 && spent > budget
     };
   });
   
   if (categories.length === 0) {
-    categories.push({ name: 'Sin compras', budget: 0, spent: 0, icon: 'basket', color: '#3B82F6', overBudget: false });
+    categories.push({ 
+      name: 'Sin compras', 
+      budget: 0, 
+      spent: 0, 
+      icon: 'basket-outline', 
+      color: colors.info, 
+      overBudget: false 
+    });
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#00B2A9" />
+        <TouchableOpacity 
+          activeOpacity={0.8}
+          style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]} 
+          onPress={() => navigation.goBack()}
+        >
+          <Feather name="chevron-left" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.title}>Presupuesto Inteligente</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>Presupuesto Inteligente</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Global Budget Card */}
-        <View style={styles.globalCard}>
-          <Text style={styles.cardSubtitle}>GASTO MENSUAL</Text>
-          <Text style={{ marginBottom: 20 }} numberOfLines={1} adjustsFontSizeToFit>
-            <Text style={styles.spentAmount}>RD$ {globalSpent.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-            <Text style={styles.totalAmount}> / RD$ {globalBudget.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-          </Text>
+        <PremiumCard variant="surface" style={styles.globalCard}>
+          <Text style={[styles.cardSubtitle, { color: colors.textLight }]}>GASTO ESTIMADO MENSUAL</Text>
           
-          <View style={styles.progressBarBg}>
+          <View style={styles.amountContainer}>
+            <Text style={[styles.spentAmount, { color: colors.textPrimary }]}>
+              RD$ {globalSpent.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
+            <Text style={[styles.totalAmount, { color: colors.textMuted }]}>
+              {' '}/ RD$ {globalBudget.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
+          </View>
+          
+          <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceAlt }]}>
             <LinearGradient 
-              colors={['#059669', '#10B981']} 
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} 
+              colors={globalPercent >= 100 ? [colors.danger, '#EF4444'] : [colors.primary, '#34D399']} 
+              start={{ x: 0, y: 0 }} 
+              end={{ x: 1, y: 0 }} 
               style={[styles.progressBarFill, { width: `${globalPercent}%` }]} 
             />
           </View>
-          <Text style={styles.remainingText}>Te quedan RD$ {(globalBudget - globalSpent).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} este mes</Text>
-        </View>
+          
+          <Text style={[styles.remainingText, { color: (globalBudget - globalSpent) >= 0 ? colors.primary : colors.danger }]}>
+            {(globalBudget - globalSpent) >= 0 
+              ? `Te quedan RD$ ${(globalBudget - globalSpent).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} este mes`
+              : `Excedido por RD$ ${Math.abs(globalBudget - globalSpent).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} este mes`
+            }
+          </Text>
+        </PremiumCard>
 
         {/* AI Alerts */}
         {budgetData.alerts && budgetData.alerts.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>Alertas del Asistente</Text>
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Alertas del Asistente IA</Text>
             {budgetData.alerts.map((alert: any, idx: number) => (
-              <View key={idx} style={styles.alertCard}>
-                <View style={styles.alertIconBox}>
-                  <Ionicons name="warning" size={20} color="#F59E0B" />
+              <PremiumCard 
+                key={idx} 
+                variant="surface"
+                style={[
+                  styles.alertCard, 
+                  { 
+                    borderColor: colors.warning, 
+                    borderWidth: 1.5,
+                    backgroundColor: darkMode ? '#2E2219' : '#FFFDF5' 
+                  }
+                ]}
+              >
+                <View style={[styles.alertIconBox, { backgroundColor: colors.warningLight }]}>
+                  <Ionicons name="warning" size={20} color={colors.warning} />
                 </View>
                 <View style={styles.alertTexts}>
-                  <Text style={styles.alertTitle}>{alert.title}</Text>
-                  <Text style={styles.alertDesc}>{alert.message}</Text>
+                  <Text style={[styles.alertTitle, { color: darkMode ? '#FBBF24' : '#B45309' }]}>{alert.title}</Text>
+                  <Text style={[styles.alertDesc, { color: colors.textSecondary }]}>{alert.message}</Text>
                 </View>
-              </View>
+              </PremiumCard>
             ))}
-          </>
+          </View>
         )}
 
         {/* Categories Breakdown */}
-        <Text style={styles.sectionTitle}>Desglose por Categoría</Text>
-        {categories.map((cat, idx) => {
-          const percent = cat.budget > 0 ? Math.min((cat.spent / cat.budget) * 100, 100) : 0;
-          return (
-            <View key={idx} style={styles.categoryRow}>
-              <View style={[styles.catIconBox, { backgroundColor: `${cat.color}20` }]}>
-                <Ionicons name={cat.icon as any} size={20} color={cat.color} />
-              </View>
-              <View style={styles.catInfo}>
-                <View style={styles.catHeader}>
-                  <Text style={styles.catName}>{cat.name}</Text>
-                  <Text style={[styles.catSpent, cat.overBudget && styles.textDanger]}>
-                    RD$ {cat.spent.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <Text style={styles.catTotal}>/ {cat.budget.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                  </Text>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Desglose por Categoría</Text>
+          {categories.map((cat, idx) => {
+            const percent = cat.budget > 0 ? Math.min((cat.spent / cat.budget) * 100, 100) : 0;
+            return (
+              <PremiumCard 
+                key={idx} 
+                variant="surface"
+                style={styles.categoryRow}
+              >
+                <View style={[styles.catIconBox, { backgroundColor: colors.surfaceAlt }]}>
+                  <Ionicons name={cat.icon as any} size={20} color={cat.color} />
                 </View>
-                <View style={styles.catProgressBg}>
-                  <View style={[styles.catProgressFill, { width: `${percent}%`, backgroundColor: cat.overBudget ? '#EF4444' : cat.color }]} />
+                <View style={styles.catInfo}>
+                  <View style={styles.catHeader}>
+                    <Text style={[styles.catName, { color: colors.textPrimary }]}>{cat.name}</Text>
+                    <View style={styles.catAmountRow}>
+                      <Text style={[styles.catSpent, { color: cat.overBudget ? colors.danger : colors.textPrimary }]}>
+                        RD$ {cat.spent.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </Text>
+                      {cat.budget > 0 && (
+                        <Text style={[styles.catTotal, { color: colors.textLight }]}>
+                          {' '}/ {cat.budget.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  {cat.budget > 0 && (
+                    <View style={[styles.catProgressBg, { backgroundColor: colors.surfaceAlt }]}>
+                      <View 
+                        style={[
+                          styles.catProgressFill, 
+                          { 
+                            width: `${percent}%`, 
+                            backgroundColor: cat.overBudget ? colors.danger : cat.color 
+                          }
+                        ]} 
+                      />
+                    </View>
+                  )}
                 </View>
-              </View>
-            </View>
-          );
-        })}
+              </PremiumCard>
+            );
+          })}
+        </View>
+        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingTop: 20, gap: 12 },
-  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#E6F8F7', justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: '800', color: '#00B2A9', letterSpacing: -0.5 },
-  content: { padding: 20 },
-  cardSubtitle: { color: '#64748B', fontSize: 12, fontWeight: '600', letterSpacing: 1, marginBottom: 8 },
-  amountRow: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 20 },
-  spentAmount: { color: '#0F172A', fontSize: 36, fontWeight: '800' },
-  totalAmount: { color: '#64748B', fontSize: 18, fontWeight: '600' },
-  remainingText: { color: '#10B981', fontSize: 14, fontWeight: '500' },
-
+  container: { 
+    flex: 1, 
+  },
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 20,
+    paddingTop: 20, 
+    paddingBottom: 16,
+    gap: 12 
+  },
+  backBtn: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  title: { 
+    fontSize: themeTypography.fontSizes.xl, 
+    fontWeight: '800', 
+    letterSpacing: -0.5 
+  },
+  content: { 
+    paddingHorizontal: 20 
+  },
+  section: {
+    marginBottom: 24,
+  },
+  cardSubtitle: { 
+    fontSize: 11, 
+    fontWeight: '700', 
+    letterSpacing: 1, 
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  amountContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'baseline', 
+    marginBottom: 20 
+  },
+  spentAmount: { 
+    fontSize: themeTypography.fontSizes.xxl, 
+    fontWeight: '800' 
+  },
+  totalAmount: { 
+    fontSize: themeTypography.fontSizes.md, 
+    fontWeight: '600' 
+  },
+  remainingText: { 
+    fontSize: themeTypography.fontSizes.sm, 
+    fontWeight: '700' 
+  },
   globalCard: { 
-    marginHorizontal: 0, backgroundColor: '#FFFFFF', borderRadius: 32, padding: 24, marginBottom: 24,
-    borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#00B2A9', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.15, shadowRadius: 24, elevation: 6
+    padding: themeLayout.spacing.lg, 
+    marginBottom: 24,
+    borderWidth: 1,
+    ...themeShadows.soft,
   },
-  progressBarBg: { height: 14, backgroundColor: '#F1F5F9', borderRadius: 7, overflow: 'hidden', marginBottom: 12 },
-  progressBarFill: { height: '100%', backgroundColor: '#16A34A', borderRadius: 7 },
-
-  sectionTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A', paddingHorizontal: 0, marginBottom: 16, marginTop: 10 },
-  
+  progressBarBg: { 
+    height: 12, 
+    borderRadius: 6, 
+    overflow: 'hidden', 
+    marginBottom: 12 
+  },
+  progressBarFill: { 
+    height: '100%', 
+    borderRadius: 6 
+  },
+  sectionTitle: { 
+    fontSize: themeTypography.fontSizes.md, 
+    fontWeight: '800', 
+    marginBottom: 16, 
+    marginTop: 8 
+  },
   alertCard: { 
-    marginHorizontal: 0, backgroundColor: '#FFFBEB', borderRadius: 20, padding: 16, flexDirection: 'row', 
-    marginBottom: 16, borderWidth: 1, borderColor: '#FEF3C7' 
+    padding: themeLayout.spacing.md, 
+    flexDirection: 'row', 
+    marginBottom: 12, 
+    borderWidth: 1,
   },
-  alertIconBox: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FEF3C7', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-  alertTexts: { flex: 1 },
-  alertTitle: { fontSize: 15, fontWeight: '700', color: '#B45309', marginBottom: 4 },
-  alertDesc: { fontSize: 13, color: '#92400E', lineHeight: 18 },
-
+  alertIconBox: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginRight: 16 
+  },
+  alertTexts: { 
+    flex: 1 
+  },
+  alertTitle: { 
+    fontSize: themeTypography.fontSizes.sm, 
+    fontWeight: '700', 
+    marginBottom: 4 
+  },
+  alertDesc: { 
+    fontSize: 13, 
+    lineHeight: 18,
+    fontWeight: '500',
+  },
   categoryRow: { 
-    marginHorizontal: 0, backgroundColor: '#FFFFFF', borderRadius: 24, padding: 16, flexDirection: 'row', alignItems: 'center', 
-    marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9',
-    shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2
+    padding: themeLayout.spacing.md, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 12, 
+    borderWidth: 1,
+    ...themeShadows.soft,
   },
-  catIconBox: { width: 52, height: 52, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: 16, backgroundColor: '#F8FAFC' },
-  catInfo: { flex: 1 },
-  catHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  catName: { fontSize: 16, fontWeight: '700', color: '#0F172A', marginBottom: 4 },
-  catSpent: { fontSize: 14, color: '#0F172A', fontWeight: '700' },
-  catTotal: { color: '#64748B', fontWeight: '500' },
-  catProgressBg: { height: 8, backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden' },
-  catProgressFill: { height: '100%', borderRadius: 4 },
-  textDanger: { color: '#EF4444' }
+  catIconBox: { 
+    width: 46, 
+    height: 46, 
+    borderRadius: themeLayout.borderRadius.md, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginRight: 16,
+  },
+  catInfo: { 
+    flex: 1 
+  },
+  catHeader: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    marginBottom: 8 
+  },
+  catName: { 
+    fontSize: themeTypography.fontSizes.md, 
+    fontWeight: '700', 
+  },
+  catAmountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  catSpent: { 
+    fontSize: 14, 
+    fontWeight: '700' 
+  },
+  catTotal: { 
+    fontSize: 12,
+    fontWeight: '500' 
+  },
+  catProgressBg: { 
+    height: 8, 
+    borderRadius: 4, 
+    overflow: 'hidden' 
+  },
+  catProgressFill: { 
+    height: '100%', 
+    borderRadius: 4 
+  },
 });

@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { useAppStore } from '../store/useAppStore';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -13,6 +14,7 @@ export const LoginScreen = ({ navigation }: any) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const login = useAppStore(s => s.login);
   const restoreSession = useAppStore(s => s.restoreSession);
 
@@ -61,10 +63,22 @@ export const LoginScreen = ({ navigation }: any) => {
 
   // Try to restore session on mount
   useEffect(() => {
+    const loadSavedUser = async () => {
+      try {
+        const savedEmail = await AsyncStorage.getItem('saved_email');
+        if (savedEmail) {
+          setEmail(savedEmail);
+          setRememberMe(true);
+        }
+      } catch (e) {}
+    };
+    
     const tryRestore = async () => {
       const restored = await restoreSession();
       if (restored) {
         navigation.replace('Main');
+      } else {
+        loadSavedUser();
       }
     };
     tryRestore();
@@ -88,6 +102,11 @@ export const LoginScreen = ({ navigation }: any) => {
     setIsLoading(false);
 
     if (result.success) {
+      if (rememberMe) {
+        await AsyncStorage.setItem('saved_email', email.trim());
+      } else {
+        await AsyncStorage.removeItem('saved_email');
+      }
       navigation.replace('Main');
     } else {
       Alert.alert('Error', result.error || 'Credenciales incorrectas.');
@@ -181,9 +200,27 @@ export const LoginScreen = ({ navigation }: any) => {
           </View>
 
           {isLoginMode && (
-            <TouchableOpacity style={{ alignItems: 'flex-end', marginBottom: 12 }}>
-              <Text style={{ color: '#059669', fontWeight: '600' }}>¿Olvidaste tu contraseña?</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <TouchableOpacity 
+                style={{ flexDirection: 'row', alignItems: 'center' }} 
+                onPress={() => setRememberMe(!rememberMe)}
+                activeOpacity={0.7}
+              >
+                <View style={{ 
+                  width: 18, height: 18, borderRadius: 4, borderWidth: 1, 
+                  borderColor: rememberMe ? '#059669' : '#D1D5DB', 
+                  backgroundColor: rememberMe ? '#059669' : 'transparent', 
+                  justifyContent: 'center', alignItems: 'center', marginRight: 8 
+                }}>
+                  {rememberMe && <Feather name="check" size={12} color="#FFF" />}
+                </View>
+                <Text style={{ color: '#6B7280', fontSize: 14 }}>Recordar usuario</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity>
+                <Text style={{ color: '#059669', fontWeight: '600' }}>¿Olvidaste tu contraseña?</Text>
+              </TouchableOpacity>
+            </View>
           )}
 
           <TouchableOpacity 

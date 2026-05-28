@@ -16,7 +16,7 @@ export const BottomTabBar = () => {
     { name: 'Home',            icon: 'home',         label: language === 'Inglés' ? 'Home' : 'Inicio' },
     { name: 'Search',          icon: 'search',       label: language === 'Inglés' ? 'Compare' : 'Comparar' },
     { name: 'CreateList',      icon: 'list',         label: language === 'Inglés' ? 'Lists' : 'Listas' },
-    { name: 'Alerts',          icon: 'tag',          label: language === 'Inglés' ? 'Offers' : 'Ofertas' },
+    { name: 'Profile',         icon: 'user',         label: language === 'Inglés' ? 'Profile' : 'Perfil' },
     { name: 'BudgetDashboard', icon: 'pie-chart',    label: language === 'Inglés' ? 'Savings' : 'Ahorros' },
   ];
 

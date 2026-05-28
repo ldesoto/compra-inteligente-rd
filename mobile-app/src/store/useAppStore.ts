@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { Alert as RNAlert } from 'react-native';
 import api from '../services/api';
 
 // Lightweight session storage - works with or without AsyncStorage
@@ -95,8 +96,9 @@ export interface AppState {
   error: string | null;
 
   // Auth
-  user: { id: string; name: string; email: string } | null;
+  user: { id: string; name: string; email: string; monthlyBudget?: number | null } | null;
   token: string | null;
+  isAuthenticated?: boolean;
 
   // Alerts
   alerts: Alert[];
@@ -130,7 +132,7 @@ export interface AppState {
   syncListToBackend: () => Promise<void>;
   compareCurrentList: () => Promise<void>;
   login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
-  googleLogin: (token: string) => Promise<{ success: boolean; error?: string }>;
+  googleLogin: (email: string, name: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   restoreSession: () => Promise<boolean>;
   dismissAlert: (id: string) => void;
@@ -431,7 +433,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       }));
     } catch (err) {
       console.warn('Failed to duplicate list:', err);
-      Alert.alert('Error', 'No se pudo duplicar la lista. Verifica tu conexión.');
+      RNAlert.alert('Error', 'No se pudo duplicar la lista. Verifica tu conexión.');
     }
   },
 
@@ -588,11 +590,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const response = await api.get('/ai/scan-fake-offers');
       if (response.data?.fakeOffersDetected > 0) {
-        const newAlert = {
+        const newAlert: Alert = {
           id: String(Date.now()),
           type: 'offer',
           message: `🚨 Se han detectado ${response.data.fakeOffersDetected} ofertas FALSAS en los supermercados esta semana. Cuidado con los "Especiales".`,
-          read: false
+          read: false,
+          createdAt: new Date().toISOString()
         };
         set(state => ({ alerts: [newAlert, ...state.alerts] }));
         return response.data.fakeOffersDetected;
@@ -694,16 +697,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch (err) {
       console.error('Smart Offers Error:', err);
       return null;
-    }
-  },
-
-  scanFakeOffers: async () => {
-    try {
-      const res = await api.get('/ai/fake-offers');
-      return res.data.fakeCount || 0;
-    } catch (e) {
-      console.warn('Fake Offers Error:', e);
-      return 0;
     }
   },
 

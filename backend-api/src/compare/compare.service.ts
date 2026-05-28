@@ -469,18 +469,28 @@ export class CompareService {
 
     results.sort((a, b) => a.price - b.price);
 
-    const maxSavings = results.length > 1 ? Math.round((results[results.length - 1].price - results[0].price) * 100) / 100 : 0;
-    const savingsPercentage = results.length > 1 ? Math.round(((maxSavings / results[results.length - 1].price) * 100) * 100) / 100 : 0;
+    // Deduplicate by supermarketId (keep only the cheapest since it's sorted)
+    const deduplicatedResults = [];
+    const seenSupermarkets = new Set();
+    for (const r of results) {
+      if (!seenSupermarkets.has(r.supermarketId)) {
+        seenSupermarkets.add(r.supermarketId);
+        deduplicatedResults.push(r);
+      }
+    }
+
+    const maxSavings = deduplicatedResults.length > 1 ? Math.round((deduplicatedResults[deduplicatedResults.length - 1].price - deduplicatedResults[0].price) * 100) / 100 : 0;
+    const savingsPercentage = deduplicatedResults.length > 1 ? Math.round(((maxSavings / deduplicatedResults[deduplicatedResults.length - 1].price) * 100) * 100) / 100 : 0;
 
     return {
       productId: product.id,
       productName: product.name,
       baseWeight: product.baseWeight,
       baseUnit: product.baseUnit,
-      bestOptionId: results.length > 0 ? results[0].supermarketId : null,
+      bestOptionId: deduplicatedResults.length > 0 ? deduplicatedResults[0].supermarketId : null,
       maxSavings,
       savingsPercentage,
-      comparisons: results
+      comparisons: deduplicatedResults
     };
   }
 }

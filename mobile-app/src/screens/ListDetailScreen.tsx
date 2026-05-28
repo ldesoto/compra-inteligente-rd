@@ -5,10 +5,24 @@ import { useAppStore } from '../store/useAppStore';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BottomTabBar } from '../components/BottomTabBar';
+import { PremiumCard } from '../components/PremiumCard';
+import { PremiumButton } from '../components/PremiumButton';
+import { themeColors, themeLayout, themeShadows, themeTypography } from '../theme/DesignSystem';
 
 export const ListDetailScreen = ({ navigation }: any) => {
-  const { currentList, comparisonResult, compareCurrentList, updateItemQuantity, addItem, searchProducts, darkMode, language } = useAppStore();
-  const [activeTab, setActiveTab] = useState('Productos');
+  const { 
+    currentList, 
+    comparisonResult, 
+    compareCurrentList, 
+    updateItemQuantity, 
+    addItem, 
+    searchProducts, 
+    darkMode, 
+    language 
+  } = useAppStore();
+  
+  const colors = darkMode ? themeColors.dark : themeColors.light;
+  const [activeTab, setActiveTab] = useState<'Resumen' | 'Productos'>('Productos');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -61,32 +75,28 @@ export const ListDetailScreen = ({ navigation }: any) => {
     defaultTitle: language === 'Inglés' ? 'My Weekly Groceries' : 'Mi Compra Semanal'
   };
 
-  const theme = {
-    bg: darkMode ? '#0F172A' : '#FFFFFF',
-    text: darkMode ? '#F8FAFC' : '#0F172A',
-    card: darkMode ? '#1E293B' : '#FFFFFF',
-    border: darkMode ? '#334155' : '#F1F5F9',
-    muted: darkMode ? '#94A3B8' : '#64748B'
-  };
-
   // Convert English tab back to standard for internal state
   const displayToKey = (displayTab: string) => {
-    if (displayTab === 'Summary') return 'Resumen';
-    if (displayTab === 'Products') return 'Productos';
-    if (displayTab === 'Compare') return 'Comparar';
-    return displayTab;
+    if (displayTab === 'Summary' || displayTab === 'Resumen') return 'Resumen';
+    if (displayTab === 'Products' || displayTab === 'Productos') return 'Productos';
+    return 'Comparar';
   };
   
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-          <Feather name="chevron-left" size={24} color="#0F172A" />
+      <View style={[styles.header, { borderColor: colors.border }]}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={[styles.iconBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+          activeOpacity={0.8}
+        >
+          <Feather name="chevron-left" size={20} color={colors.textPrimary} />
         </TouchableOpacity>
+
         {isEditingTitle ? (
           <TextInput
-            style={[styles.title, { borderBottomWidth: 1, borderBottomColor: '#16A34A', padding: 0 }]}
+            style={[styles.titleInput, { color: colors.textPrimary, borderColor: colors.premium }]}
             value={editTitleValue}
             onChangeText={setEditTitleValue}
             autoFocus
@@ -104,11 +114,15 @@ export const ListDetailScreen = ({ navigation }: any) => {
             }}
           />
         ) : (
-          <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>{currentList?.name || t.defaultTitle}</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>
+            {currentList?.name || t.defaultTitle}
+          </Text>
         )}
+
         <View style={styles.headerRight}>
           <TouchableOpacity 
-            style={styles.iconBtn} 
+            style={[styles.iconBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]} 
+            activeOpacity={0.8}
             onPress={() => {
               if (!isEditingTitle) {
                 setEditTitleValue(currentList?.name || '');
@@ -121,37 +135,43 @@ export const ListDetailScreen = ({ navigation }: any) => {
               }
             }}
           >
-            <Feather name={isEditingTitle ? "check" : "edit-2"} size={20} color={isEditingTitle ? "#16A34A" : "#475569"} />
+            <Feather name={isEditingTitle ? "check" : "edit-3"} size={16} color={isEditingTitle ? colors.primary : colors.textPrimary} />
           </TouchableOpacity>
 
           {!isEditingTitle && (
             <TouchableOpacity 
-              style={styles.iconBtn} 
+              style={[styles.iconBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]} 
+              activeOpacity={0.8}
               onPress={() => setShowMenu(true)}
             >
-              <Feather name="more-vertical" size={20} color="#475569" />
+              <Feather name="more-horizontal" size={16} color={colors.textPrimary} />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
       {/* Tabs */}
-      <View style={[styles.tabsRow, { borderBottomColor: theme.border }]}>
+      <View style={[styles.tabsRow, { borderBottomColor: colors.border, backgroundColor: colors.surface }]}>
         {t.tabs.map(displayTab => {
           const internalTab = displayToKey(displayTab);
+          const isActive = activeTab === internalTab;
           return (
             <TouchableOpacity 
-              key={internalTab} 
-              style={[styles.tab, activeTab === internalTab && styles.activeTab]}
+              key={displayTab} 
+              style={[styles.tab, isActive && { borderBottomColor: colors.premium }]}
               onPress={() => {
                 if (internalTab === 'Comparar') {
                   navigation.navigate('Comparison');
                 } else {
-                  setActiveTab(internalTab);
+                  setActiveTab(internalTab as any);
                 }
               }}
             >
-              <Text style={[styles.tabText, { color: theme.muted }, activeTab === internalTab && styles.activeTabText]}>{displayTab}</Text>
+              <Text style={[
+                styles.tabText, 
+                { color: colors.textMuted }, 
+                isActive && { color: colors.premium, fontWeight: themeTypography.fontWeights.extraBold }
+              ]}>{displayTab}</Text>
             </TouchableOpacity>
           );
         })}
@@ -161,186 +181,191 @@ export const ListDetailScreen = ({ navigation }: any) => {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
           
           {/* Mejor Opción Card */}
-          <View style={styles.bestOptionCard}>
-            <Text style={styles.bestOptionLabel}>Mejor opción</Text>
-            <Text style={styles.bestOptionPrice}>RD$ {bestPrice.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-            <Text style={styles.bestOptionStore}>{bestOption}</Text>
+          <PremiumCard gradient="savings" style={styles.bestOptionCard}>
+            <View style={styles.bestOptionHeader}>
+              <View>
+                <Text style={styles.bestOptionLabel}>Mejor opción de compra</Text>
+                <Text style={styles.bestOptionStore}>{bestOption}</Text>
+              </View>
+              <View style={styles.medalBadge}>
+                <Ionicons name="ribbon" size={32} color="#FFE082" />
+              </View>
+            </View>
+            <Text style={styles.bestOptionPrice}>
+              RD$ {bestPrice.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
             <View style={styles.savingsPill}>
+              <Ionicons name="sparkles" size={14} color="#064E3B" style={{ marginRight: 4 }} />
               <Text style={styles.savingsText}>Ahorras RD$ 800 (24%)</Text>
             </View>
-            
-            <View style={styles.bestOptionIconDecor}>
-              <Ionicons name="cart" size={100} color="#F0FDF4" />
-            </View>
-            <View style={styles.medalBadge}>
-              <Ionicons name="ribbon" size={40} color="#F59E0B" />
-            </View>
-          </View>
+          </PremiumCard>
 
           {/* Comparativa de precios */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Comparativa de precios</Text>
-            <View style={styles.cardClean}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Comparativa de precios</Text>
+            <PremiumCard style={{ marginHorizontal: themeLayout.spacing.lg }}>
               
               <View style={styles.chartRow}>
-                <View style={[styles.miniLogo, {backgroundColor: '#16A34A'}]} />
+                <View style={[styles.miniLogo, { backgroundColor: '#10B981' }]} />
                 <View style={{ flex: 1 }}>
                   <View style={styles.chartRowHeader}>
-                    <Text style={styles.chartStoreName}>Jumbo</Text>
-                    <Text style={styles.chartPrice}>RD$ 1,950</Text>
+                    <Text style={[styles.chartStoreName, { color: colors.textPrimary }]}>Jumbo</Text>
+                    <Text style={[styles.chartPrice, { color: colors.textPrimary }]}>RD$ 1,950</Text>
                   </View>
-                  <View style={styles.barTrack}>
-                    <View style={[styles.barFill, { width: '50%', backgroundColor: '#16A34A' }]} />
+                  <View style={[styles.barTrack, { backgroundColor: colors.surfaceAlt }]}>
+                    <View style={[styles.barFill, { width: '50%', backgroundColor: '#10B981' }]} />
                   </View>
                 </View>
               </View>
 
               <View style={styles.chartRow}>
-                <View style={[styles.miniLogo, {backgroundColor: '#3B82F6'}]} />
+                <View style={[styles.miniLogo, { backgroundColor: '#2563EB' }]} />
                 <View style={{ flex: 1 }}>
                   <View style={styles.chartRowHeader}>
-                    <Text style={styles.chartStoreName}>Bravo</Text>
-                    <Text style={styles.chartPrice}>RD$ 2,150</Text>
+                    <Text style={[styles.chartStoreName, { color: colors.textPrimary }]}>Bravo</Text>
+                    <Text style={[styles.chartPrice, { color: colors.textPrimary }]}>RD$ 2,150</Text>
                   </View>
-                  <View style={styles.barTrack}>
-                    <View style={[styles.barFill, { width: '60%', backgroundColor: '#3B82F6' }]} />
+                  <View style={[styles.barTrack, { backgroundColor: colors.surfaceAlt }]}>
+                    <View style={[styles.barFill, { width: '60%', backgroundColor: '#2563EB' }]} />
                   </View>
                 </View>
               </View>
 
               <View style={styles.chartRow}>
-                <View style={[styles.miniLogo, {backgroundColor: '#EAB308'}]} />
+                <View style={[styles.miniLogo, { backgroundColor: '#D97706' }]} />
                 <View style={{ flex: 1 }}>
                   <View style={styles.chartRowHeader}>
-                    <Text style={styles.chartStoreName}>Nacional</Text>
-                    <Text style={styles.chartPrice}>RD$ 2,320</Text>
+                    <Text style={[styles.chartStoreName, { color: colors.textPrimary }]}>Nacional</Text>
+                    <Text style={[styles.chartPrice, { color: colors.textPrimary }]}>RD$ 2,320</Text>
                   </View>
-                  <View style={styles.barTrack}>
-                    <View style={[styles.barFill, { width: '70%', backgroundColor: '#EAB308' }]} />
+                  <View style={[styles.barTrack, { backgroundColor: colors.surfaceAlt }]}>
+                    <View style={[styles.barFill, { width: '70%', backgroundColor: '#D97706' }]} />
                   </View>
                 </View>
               </View>
 
               <View style={styles.chartRow}>
-                <View style={[styles.miniLogo, {backgroundColor: '#EF4444'}]} />
+                <View style={[styles.miniLogo, { backgroundColor: '#DC2626' }]} />
                 <View style={{ flex: 1 }}>
                   <View style={styles.chartRowHeader}>
-                    <Text style={styles.chartStoreName}>La Sirena</Text>
-                    <Text style={styles.chartPrice}>RD$ 2,780</Text>
+                    <Text style={[styles.chartStoreName, { color: colors.textPrimary }]}>La Sirena</Text>
+                    <Text style={[styles.chartPrice, { color: colors.textPrimary }]}>RD$ 2,780</Text>
                   </View>
-                  <View style={styles.barTrack}>
-                    <View style={[styles.barFill, { width: '90%', backgroundColor: '#EF4444' }]} />
+                  <View style={[styles.barTrack, { backgroundColor: colors.surfaceAlt }]}>
+                    <View style={[styles.barFill, { width: '90%', backgroundColor: '#DC2626' }]} />
                   </View>
                 </View>
               </View>
 
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
               
-              <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Comparison')}>
-                <Text style={styles.linkText}>Ver análisis completo</Text>
-                <Feather name="chevron-right" size={16} color="#16A34A" />
+              <TouchableOpacity 
+                style={styles.linkButton} 
+                onPress={() => navigation.navigate('Comparison')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.linkText, { color: colors.premium }]}>Ver análisis completo de sucursales</Text>
+                <Feather name="arrow-right" size={16} color={colors.premium} />
               </TouchableOpacity>
-            </View>
+            </PremiumCard>
           </View>
 
           {/* Resumen de tu lista */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Resumen de tu lista</Text>
-            <View style={[styles.cardClean, styles.summaryGrid]}>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryValue}>{currentList?.items.length || 0}</Text>
-                <Text style={styles.summaryLabel}>Productos</Text>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Resumen de tu lista</Text>
+            <PremiumCard style={{ marginHorizontal: themeLayout.spacing.lg }}>
+              <View style={styles.summaryGrid}>
+                <View style={styles.summaryItem}>
+                  <Text style={[styles.summaryValue, { color: colors.textPrimary }]}>{currentList?.items.length || 0}</Text>
+                  <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Productos</Text>
+                </View>
+                <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.summaryItem}>
+                  <Text style={[styles.summaryValue, { color: colors.textPrimary }]}>
+                    {currentList?.items.reduce((sum, item) => sum + item.quantity, 0) || 0}
+                  </Text>
+                  <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Artículos</Text>
+                </View>
+                <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.summaryItem}>
+                  <Text style={[styles.summaryValue, { color: colors.textPrimary }]}>0</Text>
+                  <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Agotados</Text>
+                </View>
               </View>
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryValue}>{currentList?.items.reduce((sum, item) => sum + item.quantity, 0) || 0}</Text>
-                <Text style={styles.summaryLabel}>Artículos</Text>
-              </View>
-              <View style={styles.summaryDivider} />
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryValue}>0</Text>
-                <Text style={styles.summaryLabel}>No disponibles</Text>
-              </View>
-            </View>
+            </PremiumCard>
           </View>
 
           {/* Distribución por categoría */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Distribución por categoría</Text>
-            <View style={[styles.cardClean, styles.distributionCard]}>
-              <View style={styles.pieChartMock}>
-                 {/* Simulación visual de Pie Chart usando CSS */}
-                 <View style={[styles.pieSlice, { borderTopColor: '#16A34A', borderRightColor: '#16A34A' }]} />
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Distribución por categoría</Text>
+            <PremiumCard style={[styles.distributionCard, { marginHorizontal: themeLayout.spacing.lg }]}>
+              <View style={[styles.pieChartMock, { borderColor: colors.surfaceAlt }]}>
+                 <View style={[styles.pieSlice, { borderTopColor: colors.primary, borderRightColor: colors.primary }]} />
                  <View style={[styles.pieSlice, { borderBottomColor: '#3B82F6', borderLeftColor: '#3B82F6', transform: [{rotate: '45deg'}] }]} />
-                 <View style={[styles.pieSlice, { borderBottomColor: '#8B5CF6', borderRightColor: '#8B5CF6', transform: [{rotate: '-45deg'}] }]} />
-                 <View style={styles.pieHole} />
+                 <View style={[styles.pieSlice, { borderBottomColor: colors.premium, borderRightColor: colors.premium, transform: [{rotate: '-45deg'}] }]} />
+                 <View style={[styles.pieHole, { backgroundColor: colors.surface }]} />
               </View>
 
               <View style={styles.legend}>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, {backgroundColor: '#16A34A'}]} />
-                  <Text style={styles.legendLabel}>Alimentos</Text>
-                  <Text style={styles.legendValue}>45%</Text>
+                  <View style={[styles.legendDot, {backgroundColor: colors.primary}]} />
+                  <Text style={[styles.legendLabel, { color: colors.textPrimary }]}>Alimentos</Text>
+                  <Text style={[styles.legendValue, { color: colors.textPrimary }]}>45%</Text>
                 </View>
                 <View style={styles.legendItem}>
                   <View style={[styles.legendDot, {backgroundColor: '#3B82F6'}]} />
-                  <Text style={styles.legendLabel}>Lácteos</Text>
-                  <Text style={styles.legendValue}>20%</Text>
+                  <Text style={[styles.legendLabel, { color: colors.textPrimary }]}>Lácteos</Text>
+                  <Text style={[styles.legendValue, { color: colors.textPrimary }]}>20%</Text>
                 </View>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, {backgroundColor: '#8B5CF6'}]} />
-                  <Text style={styles.legendLabel}>Bebidas</Text>
-                  <Text style={styles.legendValue}>15%</Text>
+                  <View style={[styles.legendDot, {backgroundColor: colors.premium}]} />
+                  <Text style={[styles.legendLabel, { color: colors.textPrimary }]}>Bebidas</Text>
+                  <Text style={[styles.legendValue, { color: colors.textPrimary }]}>15%</Text>
                 </View>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, {backgroundColor: '#EC4899'}]} />
-                  <Text style={styles.legendLabel}>Limpieza</Text>
-                  <Text style={styles.legendValue}>10%</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, {backgroundColor: '#EAB308'}]} />
-                  <Text style={styles.legendLabel}>Otros</Text>
-                  <Text style={styles.legendValue}>10%</Text>
+                  <View style={[styles.legendDot, {backgroundColor: colors.danger}]} />
+                  <Text style={[styles.legendLabel, { color: colors.textPrimary }]}>Limpieza</Text>
+                  <Text style={[styles.legendValue, { color: colors.textPrimary }]}>10%</Text>
                 </View>
               </View>
-            </View>
+            </PremiumCard>
           </View>
 
           {/* Impacto en tu presupuesto */}
           <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>Impacto en tu presupuesto</Text>
-              <Feather name="trending-up" size={18} color="#16A34A" />
-            </View>
-            <View style={styles.cardClean}>
-              <Text style={styles.budgetSubtitle}>Llevas un 72% de tu presupuesto mensual</Text>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Impacto en tu presupuesto</Text>
+            <PremiumCard style={{ marginHorizontal: themeLayout.spacing.lg }}>
+              <Text style={[styles.budgetSubtitle, { color: colors.textMuted }]}>Has alcanzado un <Text style={{ color: colors.premium, fontWeight: '800' }}>72%</Text> de tu límite mensual</Text>
               
-              <View style={styles.budgetTrack}>
-                <View style={[styles.budgetFill, { width: '72%' }]} />
+              <View style={[styles.budgetTrack, { backgroundColor: colors.surfaceAlt }]}>
+                <View style={[styles.budgetFill, { width: '72%', backgroundColor: colors.premium }]} />
               </View>
               
               <View style={styles.budgetTexts}>
-                <Text style={styles.budgetText}>Presupuesto: <Text style={{fontWeight: '700'}}>RD$ 8,500</Text></Text>
-                <Text style={styles.budgetText}>Gastado: <Text style={{fontWeight: '700'}}>RD$ 6,080</Text></Text>
+                <Text style={[styles.budgetText, { color: colors.textMuted }]}>Presupuesto: <Text style={{fontWeight: '700', color: colors.textPrimary}}>RD$ 8,500</Text></Text>
+                <Text style={[styles.budgetText, { color: colors.textMuted }]}>Estimado: <Text style={{fontWeight: '700', color: colors.textPrimary}}>RD$ 6,080</Text></Text>
               </View>
 
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-              <View style={styles.tipBox}>
+              <View style={[styles.tipBox, { backgroundColor: colors.surfaceAlt }]}>
                 <View style={styles.tipHeader}>
-                  <Ionicons name="sparkles" size={16} color="#3B82F6" />
-                  <Text style={styles.tipTitle}>Tip inteligente</Text>
+                  <Ionicons name="sparkles" size={16} color={colors.premium} />
+                  <Text style={[styles.tipTitle, { color: colors.premium }]}>Estrategia de Inteligencia Artificial</Text>
                 </View>
-                <Text style={styles.tipText}>
-                  Si divides tu compra entre Jumbo y Bravo, puedes ahorrar <Text style={styles.tipBold}>RD$ 1,120</Text> más.
+                <Text style={[styles.tipText, { color: colors.textPrimary }]}>
+                  Si divides esta compra entre <Text style={{ fontWeight: '800' }}>Jumbo</Text> y <Text style={{ fontWeight: '800' }}>Bravo</Text>, tu ahorro pasivo ascenderá a <Text style={[styles.tipBold, { color: colors.primary }]}>RD$ 1,120</Text> adicionales.
                 </Text>
                 
-                <TouchableOpacity style={styles.tipButton}>
-                  <Text style={styles.tipButtonText}>Ver estrategia</Text>
-                  <Feather name="chevron-right" size={16} color="#3B82F6" />
+                <TouchableOpacity 
+                  style={[styles.tipButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => navigation.navigate('Comparison')}
+                >
+                  <Text style={[styles.tipButtonText, { color: colors.premium }]}>Aplicar Estrategia</Text>
+                  <Feather name="arrow-right" size={14} color={colors.premium} />
                 </TouchableOpacity>
               </View>
-            </View>
+            </PremiumCard>
           </View>
 
           <View style={{ height: 40 }} />
@@ -348,39 +373,45 @@ export const ListDetailScreen = ({ navigation }: any) => {
       )}
 
       {activeTab === 'Productos' && (
-        <View style={{ flex: 1, backgroundColor: theme.bg }}>
-          <View style={[styles.searchBoxContainer, { backgroundColor: theme.bg }]}>
-            <View style={[styles.searchBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
-              <Feather name="search" size={20} color={theme.muted} style={styles.searchIcon} />
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
+          {/* Modern Search Bar */}
+          <View style={[styles.searchBoxContainer, { backgroundColor: colors.background }]}>
+            <View style={[styles.searchBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
               <TextInput 
                 placeholder={t.searchPlaceholder}
-                placeholderTextColor={theme.muted}
-                style={[styles.searchInput, { color: theme.text }]}
+                placeholderTextColor={colors.textMuted}
+                style={[styles.searchInput, { color: colors.textPrimary }]}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
               {searchQuery.length > 0 ? (
                 <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.barcodeBtn}>
-                  <Feather name="x" size={20} color={theme.muted} />
+                  <Feather name="x" size={18} color={colors.textMuted} />
                 </TouchableOpacity>
               ) : (
-                <TouchableOpacity style={styles.barcodeBtn}>
-                  <Ionicons name="barcode-outline" size={20} color={theme.text} />
+                <TouchableOpacity style={styles.barcodeBtn} activeOpacity={0.7}>
+                  <Ionicons name="barcode-outline" size={20} color={colors.textPrimary} />
                 </TouchableOpacity>
               )}
             </View>
           </View>
           
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 60 }}>
             {searchResults.length > 0 && (
               <View style={styles.searchResultsContainer}>
-                <Text style={styles.searchResultsTitle}>Resultados sugeridos</Text>
+                <Text style={[styles.searchResultsTitle, { color: colors.textMuted }]}>Resultados sugeridos</Text>
                 {searchResults.map(result => (
-                  <TouchableOpacity key={result.id} style={styles.searchResultItem} onPress={() => handleAddItem(result)}>
-                    <Ionicons name="add-circle" size={24} color="#16A34A" />
+                  <TouchableOpacity 
+                    key={result.id} 
+                    style={[styles.searchResultItem, { backgroundColor: colors.surface, borderColor: colors.border }]} 
+                    onPress={() => handleAddItem(result)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="add-circle" size={24} color={colors.primary} />
                     <View style={[styles.searchResultInfo, { minWidth: 0 }]}>
-                      <Text style={styles.searchResultName} numberOfLines={2} ellipsizeMode="tail">{result.name}</Text>
-                      <Text style={styles.searchResultUnit} numberOfLines={1}>{result.unit}</Text>
+                      <Text style={[styles.searchResultName, { color: colors.textPrimary }]} numberOfLines={2} ellipsizeMode="tail">{result.name}</Text>
+                      <Text style={[styles.searchResultUnit, { color: colors.textMuted }]} numberOfLines={1}>{result.unit}</Text>
                     </View>
                   </TouchableOpacity>
                 ))}
@@ -388,26 +419,30 @@ export const ListDetailScreen = ({ navigation }: any) => {
             )}
 
             {searchQuery.length === 0 && currentList?.items?.map(item => (
-              <View key={item.id} style={[styles.productCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <View style={[styles.productIconBox, darkMode && { backgroundColor: '#064E3B' }]}>
-                  <Ionicons name="cube-outline" size={24} color="#16A34A" />
+              <PremiumCard 
+                key={item.id} 
+                style={styles.productCard}
+              >
+                <View style={[styles.productIconBox, { backgroundColor: darkMode ? '#064E3B' : '#E6F8F7' }]}>
+                  <Ionicons name="cube-outline" size={22} color={colors.primary} />
                 </View>
                 <View style={[styles.productInfo, { minWidth: 0 }]}>
-                  <Text style={[styles.productName, { color: theme.text }]}>{item.name}</Text>
-                  <Text style={[styles.productUnit, { color: theme.muted }]}>{item.unit}</Text>
+                  <Text style={[styles.productName, { color: colors.textPrimary }]} numberOfLines={2}>{item.name}</Text>
+                  <Text style={[styles.productUnit, { color: colors.textMuted }]}>{item.unit}</Text>
                 </View>
                 
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={styles.quantityControlsVertical}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  {/* Quantity Controls */}
+                  <View style={[styles.quantityControlsVertical, { backgroundColor: colors.surfaceAlt }]}>
                     <TouchableOpacity 
-                      style={styles.qtyBtn}
+                      style={[styles.qtyBtn, { backgroundColor: colors.surface }]}
                       onPress={() => updateItemQuantity(item.id, item.quantity + 1)}
                     >
-                      <Feather name="plus" size={16} color="#0F172A" />
+                      <Feather name="plus" size={14} color={colors.textPrimary} />
                     </TouchableOpacity>
-                    <Text style={styles.qtyTextVertical}>{item.quantity}</Text>
+                    <Text style={[styles.qtyTextVertical, { color: colors.textPrimary }]}>{item.quantity}</Text>
                     <TouchableOpacity 
-                      style={styles.qtyBtn} 
+                      style={[styles.qtyBtn, { backgroundColor: colors.surface }]} 
                       onPress={() => {
                         if (item.quantity === 1) {
                           Alert.alert(
@@ -427,16 +462,15 @@ export const ListDetailScreen = ({ navigation }: any) => {
                         }
                       }}
                     >
-                      <Feather name="minus" size={16} color="#0F172A" />
+                      <Feather name="minus" size={14} color={colors.textPrimary} />
                     </TouchableOpacity>
                   </View>
                   
-                  {/* Botón para comparar sucursales */}
+                  {/* Branch Comparison Pin Button */}
                   <TouchableOpacity 
-                    style={[styles.deleteBtn, { backgroundColor: '#EFF6FF', borderColor: '#DBEAFE', marginLeft: 12 }]}
+                    style={[styles.deleteBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+                    activeOpacity={0.8}
                     onPress={() => {
-                      // Attempt to get real location using React Native's built-in Geolocation API
-                      
                       const getBranchCompare = async (lat: number, lng: number) => {
                         const result = await useAppStore.getState().compareByBranch(item.canonicalProductId || item.id, lat, lng);
                         if (result) {
@@ -467,25 +501,28 @@ export const ListDetailScreen = ({ navigation }: any) => {
                       fetchLocation();
                     }}
                   >
-                    <Feather name="map-pin" size={18} color="#3B82F6" />
+                    <Feather name="map-pin" size={16} color={colors.premium} />
                   </TouchableOpacity>
                 </View>
-              </View>
+              </PremiumCard>
             ))}
             
-            {/* Botón flotante para sugerencias IA */}
-            <TouchableOpacity style={styles.aiSuggestBtn} onPress={() => navigation.navigate('AiAssistant')}>
-              <LinearGradient colors={darkMode ? ['#064E3B', '#16A34A'] : ['#F0FDF4', '#DCFCE7']} style={styles.aiSuggestGradient}>
-                <Ionicons name="sparkles" size={18} color={darkMode ? '#DCFCE7' : '#16A34A'} />
-                <Text style={[styles.aiSuggestText, darkMode && { color: '#DCFCE7' }]}>{t.suggestAI}</Text>
+            {/* AI Suggest Float Panel */}
+            <TouchableOpacity 
+              style={styles.aiSuggestBtn} 
+              onPress={() => navigation.navigate('AiAssistant')}
+              activeOpacity={0.85}
+            >
+              <LinearGradient colors={darkMode ? ['#2D1B4E', '#1E1B4B'] : ['#F5F3FF', '#EDE9FE']} style={styles.aiSuggestGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+                <Ionicons name="sparkles" size={16} color={colors.premium} />
+                <Text style={[styles.aiSuggestText, { color: colors.premium }]}>{t.suggestAI}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </ScrollView>
         </View>
       )}
 
-
-
+      {/* Settings Modal Menu */}
       <Modal
         visible={showMenu}
         transparent={true}
@@ -495,9 +532,10 @@ export const ListDetailScreen = ({ navigation }: any) => {
         <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback>
-              <View style={styles.menuContainer}>
+              <View style={[styles.menuContainer, { backgroundColor: colors.surface }]}>
                 <TouchableOpacity 
                   style={styles.menuOption} 
+                  activeOpacity={0.7}
                   onPress={() => {
                     setShowMenu(false);
                     if (currentList) {
@@ -506,26 +544,28 @@ export const ListDetailScreen = ({ navigation }: any) => {
                     }
                   }}
                 >
-                  <Feather name="copy" size={20} color="#3B82F6" />
-                  <Text style={styles.menuText}>Duplicar Lista</Text>
+                  <Feather name="copy" size={18} color={colors.premium} />
+                  <Text style={[styles.menuText, { color: colors.textPrimary }]}>Duplicar Lista</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
                   style={styles.menuOption} 
+                  activeOpacity={0.7}
                   onPress={() => {
                     setShowMenu(false);
                     setEmailInput('');
                     setShowEmailPrompt(true);
                   }}
                 >
-                  <Feather name="user-plus" size={20} color="#F59E0B" />
-                  <Text style={styles.menuText}>Compartir / Colaborar</Text>
+                  <Feather name="user-plus" size={18} color="#D97706" />
+                  <Text style={[styles.menuText, { color: colors.textPrimary }]}>Compartir / Colaborar</Text>
                 </TouchableOpacity>
 
-                <View style={styles.menuDivider} />
+                <View style={[styles.menuDivider, { backgroundColor: colors.border }]} />
 
                 <TouchableOpacity 
-                  style={[styles.menuOption, { paddingBottom: 8 }]} 
+                  style={styles.menuOption} 
+                  activeOpacity={0.7}
                   onPress={() => {
                     setShowMenu(false);
                     if (Platform.OS === 'web') {
@@ -543,17 +583,18 @@ export const ListDetailScreen = ({ navigation }: any) => {
                           { text: 'Cancelar', style: 'cancel' },
                           { text: 'Sí, eliminar', style: 'destructive', onPress: () => {
                             if (currentList) {
-                              useAppStore.getState().deleteList(currentList.id);
-                              navigation.goBack();
+                                useAppStore.getState().deleteList(currentList.id);
+                                navigation.goBack();
+                              }
                             }
-                          }}
+                          }
                         ]
                       );
                     }
                   }}
                 >
-                  <Feather name="trash-2" size={20} color="#EF4444" />
-                  <Text style={[styles.menuText, { color: '#EF4444' }]}>Eliminar Lista</Text>
+                  <Feather name="trash-2" size={18} color={colors.danger} />
+                  <Text style={[styles.menuText, { color: colors.danger }]}>Eliminar Lista</Text>
                 </TouchableOpacity>
               </View>
             </TouchableWithoutFeedback>
@@ -561,6 +602,7 @@ export const ListDetailScreen = ({ navigation }: any) => {
         </TouchableWithoutFeedback>
       </Modal>
 
+      {/* Share Email Collaborator Prompt */}
       <Modal
         visible={showEmailPrompt}
         transparent={true}
@@ -568,13 +610,23 @@ export const ListDetailScreen = ({ navigation }: any) => {
         onRequestClose={() => setShowEmailPrompt(false)}
       >
         <View style={[styles.modalOverlay, { justifyContent: 'center', alignItems: 'center' }]}>
-          <View style={[styles.menuContainer, { width: '85%', borderRadius: 24 }]}>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: '#0F172A', marginBottom: 8 }}>Compartir Lista</Text>
-            <Text style={{ fontSize: 14, color: '#64748B', marginBottom: 20 }}>Ingresa el correo electrónico del colaborador (Debe estar registrado)</Text>
+          <View style={[styles.menuContainer, { width: '85%', borderRadius: 28, backgroundColor: colors.surface, padding: 24 }]}>
+            <Text style={{ fontSize: 18, fontWeight: '800', color: colors.textPrimary, marginBottom: 6 }}>Compartir Lista</Text>
+            <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 20 }}>Ingresa el correo electrónico del colaborador (debe tener una cuenta registrada).</Text>
             
             <TextInput
-              style={{ backgroundColor: '#F8FAFC', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', fontSize: 16, marginBottom: 20 }}
+              style={{ 
+                backgroundColor: colors.surfaceAlt, 
+                padding: 16, 
+                borderRadius: 16, 
+                borderWidth: 1, 
+                borderColor: colors.border, 
+                fontSize: 16, 
+                color: colors.textPrimary,
+                marginBottom: 20 
+              }}
               placeholder="correo@ejemplo.com"
+              placeholderTextColor={colors.textMuted}
               keyboardType="email-address"
               autoCapitalize="none"
               value={emailInput}
@@ -584,14 +636,14 @@ export const ListDetailScreen = ({ navigation }: any) => {
 
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity 
-                style={{ flex: 1, padding: 14, borderRadius: 12, backgroundColor: '#F1F5F9', alignItems: 'center' }}
+                style={{ flex: 1, padding: 16, borderRadius: 16, backgroundColor: colors.surfaceAlt, alignItems: 'center' }}
                 onPress={() => setShowEmailPrompt(false)}
               >
-                <Text style={{ color: '#475569', fontWeight: '600' }}>Cancelar</Text>
+                <Text style={{ color: colors.textMuted, fontWeight: '700' }}>Cancelar</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={{ flex: 1, padding: 14, borderRadius: 12, backgroundColor: '#3B82F6', alignItems: 'center' }}
+                style={{ flex: 1, padding: 16, borderRadius: 16, backgroundColor: colors.premium, alignItems: 'center' }}
                 onPress={async () => {
                   if (emailInput.trim() && currentList) {
                     setShowEmailPrompt(false);
@@ -601,7 +653,7 @@ export const ListDetailScreen = ({ navigation }: any) => {
                   }
                 }}
               >
-                <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Invitar</Text>
+                <Text style={{ color: '#FFFFFF', fontWeight: '700' }}>Invitar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -611,44 +663,47 @@ export const ListDetailScreen = ({ navigation }: any) => {
       {/* Modal para Comparar por Sucursal */}
       <Modal visible={showBranchModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Comparativa por Sucursal</Text>
-              <TouchableOpacity onPress={() => setShowBranchModal(false)}>
-                <Feather name="x" size={24} color="#0F172A" />
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Comparativa por Sucursal</Text>
+              <TouchableOpacity 
+                onPress={() => setShowBranchModal(false)}
+                style={[styles.closeBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, width: 36, height: 36, borderRadius: 18 }]}
+              >
+                <Feather name="x" size={16} color={colors.textPrimary} />
               </TouchableOpacity>
             </View>
             
             {branchCompareData && (
-              <ScrollView>
-                <Text style={styles.branchProductName}>{branchCompareData.productName}</Text>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <Text style={[styles.branchProductName, { color: colors.textPrimary }]}>{branchCompareData.productName}</Text>
                 
                 {branchCompareData.cheapestBranch && (
-                  <View style={styles.cheapestBranchBadge}>
-                    <Ionicons name="trophy" size={16} color="#B45309" />
-                    <Text style={styles.cheapestBranchText}>
-                      Sucursal más barata: {branchCompareData.cheapestBranch.storeName} (A {branchCompareData.cheapestBranch.distanceKm}km)
+                  <View style={[styles.cheapestBranchBadge, { backgroundColor: darkMode ? '#372005' : '#FEF3C7' }]}>
+                    <Ionicons name="trophy" size={16} color="#D97706" style={{ marginRight: 8 }} />
+                    <Text style={[styles.cheapestBranchText, { color: darkMode ? '#FFE082' : '#B45309' }]}>
+                      Sucursal recomendada: {branchCompareData.cheapestBranch.storeName} ({branchCompareData.cheapestBranch.distanceKm} km de distancia)
                     </Text>
                   </View>
                 )}
 
-                <Text style={styles.modalLabel}>Disponibilidad cercana:</Text>
+                <Text style={[styles.modalLabel, { color: colors.textMuted }]}>Disponibilidad y precios cercanos:</Text>
                 {branchCompareData.branches?.map((branch: any, idx: number) => (
-                  <View key={idx} style={styles.branchCard}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.branchSupermarket}>{branch.supermarketName}</Text>
-                      <Text style={styles.branchStoreName}>{branch.storeName}</Text>
-                      <Text style={styles.branchAddress}>{branch.address}</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                        <Feather name="map-pin" size={12} color="#64748B" />
-                        <Text style={styles.branchDistance}>{branch.distanceKm?.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} km de ti</Text>
+                  <View key={idx} style={[styles.branchCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
+                    <View style={{ flex: 1, marginRight: 10 }}>
+                      <Text style={[styles.branchSupermarket, { color: colors.textPrimary }]}>{branch.supermarketName}</Text>
+                      <Text style={[styles.branchStoreName, { color: colors.textMuted }]}>{branch.storeName}</Text>
+                      <Text style={[styles.branchAddress, { color: colors.textMuted }]} numberOfLines={1}>{branch.address}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 4 }}>
+                        <Feather name="map-pin" size={11} color={colors.textMuted} />
+                        <Text style={[styles.branchDistance, { color: colors.textMuted }]}>{branch.distanceKm?.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} km de ti</Text>
                       </View>
                     </View>
-                    <View style={{ alignItems: 'flex-end' }}>
-                      <Text style={styles.branchPrice}>RD$ {branch.price}</Text>
+                    <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
+                      <Text style={[styles.branchPrice, { color: colors.primary }]}>RD$ {branch.price}</Text>
                       {branch.inStock ? (
-                        <View style={styles.inStockBadge}>
-                          <Text style={styles.inStockText}>Disponible</Text>
+                        <View style={[styles.inStockBadge, { backgroundColor: darkMode ? '#064E3B' : '#DCFCE7' }]}>
+                          <Text style={[styles.inStockText, { color: colors.primary }]}>Disponible</Text>
                         </View>
                       ) : (
                         <View style={[styles.inStockBadge, { backgroundColor: '#FEE2E2' }]}>
@@ -670,147 +725,139 @@ export const ListDetailScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FFFFFF' },
+  safe: { flex: 1 },
   header: { 
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', 
-    paddingHorizontal: 20, paddingTop: 10, paddingBottom: 10 
+    paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12,
+    borderBottomWidth: 1, borderBottomColor: 'transparent'
   },
-  iconBtn: { padding: 4 },
-  title: { fontSize: 18, fontWeight: '700', color: '#0F172A', flex: 1, textAlign: 'center', marginHorizontal: 10 },
+  iconBtn: { 
+    width: 40, height: 40, borderRadius: 20, borderWidth: 1, 
+    justifyContent: 'center', alignItems: 'center' 
+  },
+  title: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center', marginHorizontal: 10, letterSpacing: -0.5 },
+  titleInput: { fontSize: 16, fontWeight: '700', flex: 1, textAlign: 'center', marginHorizontal: 10, borderBottomWidth: 2, paddingVertical: 4 },
   headerRight: { flexDirection: 'row', gap: 10 },
   
-  tabsRow: { flexDirection: 'row', paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  tab: { flex: 1, paddingVertical: 14, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  activeTab: { borderBottomColor: '#00B2A9' },
-  tabText: { fontSize: 14, color: '#64748B', fontWeight: '500' },
-  activeTabText: { color: '#00B2A9', fontWeight: '700' },
+  tabsRow: { flexDirection: 'row', paddingHorizontal: 24, borderBottomWidth: 1 },
+  tab: { flex: 1, paddingVertical: 14, alignItems: 'center', borderBottomWidth: 3, borderBottomColor: 'transparent' },
+  tabText: { fontSize: 14, fontWeight: '600' },
   
-  scroll: { paddingBottom: 40, paddingTop: 20 },
+  scroll: { paddingBottom: 40, paddingTop: 16 },
   
   bestOptionCard: { 
-    marginHorizontal: 24, backgroundColor: '#E6F8F7', borderRadius: 24, padding: 24, 
-    marginBottom: 32, overflow: 'hidden'
+    marginHorizontal: 20, borderRadius: 28, padding: 22, 
+    marginBottom: 28, overflow: 'hidden'
   },
-  bestOptionLabel: { fontSize: 14, color: '#00B2A9', fontWeight: '600', marginBottom: 8, zIndex: 2 },
-  bestOptionPrice: { fontSize: 36, color: '#0F172A', fontWeight: '900', marginBottom: 4, zIndex: 2 },
-  bestOptionStore: { fontSize: 18, color: '#00B2A9', fontWeight: '700', marginBottom: 16, zIndex: 2 },
+  bestOptionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  bestOptionLabel: { fontSize: 12, color: '#FFFFFF', opacity: 0.8, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  bestOptionStore: { fontSize: 20, color: '#FFFFFF', fontWeight: '900', marginTop: 2 },
+  bestOptionPrice: { fontSize: 32, color: '#FFFFFF', fontWeight: '900', marginBottom: 12 },
   savingsPill: { 
-    alignSelf: 'flex-start', backgroundColor: '#BFF3F0', paddingHorizontal: 12, paddingVertical: 6, 
-    borderRadius: 16, zIndex: 2 
+    flexDirection: 'row', alignSelf: 'flex-start', backgroundColor: '#FFFFFF', paddingHorizontal: 12, paddingVertical: 6, 
+    borderRadius: 12, alignItems: 'center'
   },
-  savingsText: { color: '#009088', fontSize: 13, fontWeight: '700' },
-  bestOptionIconDecor: { position: 'absolute', right: -20, bottom: -20, zIndex: 1, opacity: 0.5, transform: [{rotate: '-15deg'}] },
-  medalBadge: { position: 'absolute', right: 20, top: 20, zIndex: 3 },
+  savingsText: { color: '#064E3B', fontSize: 13, fontWeight: '800' },
+  medalBadge: { padding: 4 },
 
-  sectionContainer: { marginBottom: 32 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#0F172A', paddingHorizontal: 24, marginBottom: 16 },
-  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 16 },
-  
-  cardClean: { 
-    marginHorizontal: 24, backgroundColor: '#FFFFFF', borderRadius: 24, padding: 20, 
-    borderWidth: 1, borderColor: '#F1F5F9',
-    shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 16, elevation: 4
-  },
+  sectionContainer: { marginBottom: 28 },
+  sectionTitle: { fontSize: 16, fontWeight: '800', paddingHorizontal: 24, marginBottom: 12, letterSpacing: -0.3 },
   
   chartRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  miniLogo: { width: 24, height: 24, borderRadius: 12, marginRight: 12 },
+  miniLogo: { width: 14, height: 14, borderRadius: 7, marginRight: 12 },
   chartRowHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  chartStoreName: { fontSize: 14, color: '#0F172A', fontWeight: '600' },
-  chartPrice: { fontSize: 14, color: '#0F172A', fontWeight: '800' },
-  barTrack: { height: 6, backgroundColor: '#F1F5F9', borderRadius: 3, overflow: 'hidden' },
+  chartStoreName: { fontSize: 13, fontWeight: '700' },
+  chartPrice: { fontSize: 13, fontWeight: '800' },
+  barTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 3 },
   
-  divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 8 },
-  linkButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
-  linkText: { color: '#64748B', fontSize: 14, fontWeight: '500' },
+  divider: { height: 1, marginVertical: 12 },
+  linkButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4, paddingVertical: 4 },
+  linkText: { fontSize: 13, fontWeight: '700' },
   
-  summaryGrid: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 24 },
+  summaryGrid: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
   summaryItem: { flex: 1, alignItems: 'center' },
-  summaryValue: { fontSize: 24, fontWeight: '800', color: '#0F172A', marginBottom: 4 },
-  summaryLabel: { fontSize: 12, color: '#64748B', fontWeight: '500' },
-  summaryDivider: { width: 1, height: 40, backgroundColor: '#F1F5F9' },
+  summaryValue: { fontSize: 22, fontWeight: '900', marginBottom: 4 },
+  summaryLabel: { fontSize: 12, fontWeight: '600' },
+  summaryDivider: { width: 1, height: 32 },
   
-  distributionCard: { flexDirection: 'row', alignItems: 'center' },
+  distributionCard: { flexDirection: 'row', alignItems: 'center', padding: 20 },
   pieChartMock: { 
-    width: 120, height: 120, borderRadius: 60, borderWidth: 20, borderColor: '#F1F5F9', 
-    position: 'relative', overflow: 'hidden', marginRight: 24
+    width: 90, height: 90, borderRadius: 45, borderWidth: 16, 
+    position: 'relative', overflow: 'hidden', marginRight: 20
   },
-  pieSlice: { position: 'absolute', top: -20, left: -20, right: -20, bottom: -20, borderWidth: 40, borderColor: 'transparent', borderRadius: 80 },
-  pieHole: { position: 'absolute', top: 20, left: 20, right: 20, bottom: 20, backgroundColor: '#FFF', borderRadius: 40 },
+  pieSlice: { position: 'absolute', top: -16, left: -16, right: -16, bottom: -16, borderWidth: 32, borderColor: 'transparent', borderRadius: 64 },
+  pieHole: { position: 'absolute', top: 16, left: 16, right: 16, bottom: 16, borderRadius: 32 },
   
-  legend: { flex: 1, gap: 10 },
+  legend: { flex: 1, gap: 8 },
   legendItem: { flexDirection: 'row', alignItems: 'center' },
   legendDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
-  legendLabel: { flex: 1, fontSize: 12, color: '#475569' },
-  legendValue: { fontSize: 12, color: '#0F172A', fontWeight: '700' },
+  legendLabel: { flex: 1, fontSize: 12, fontWeight: '600' },
+  legendValue: { fontSize: 12, fontWeight: '800' },
   
-  budgetSubtitle: { fontSize: 14, color: '#475569', marginBottom: 16 },
-  budgetTrack: { height: 8, backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden', marginBottom: 12 },
-  budgetFill: { height: '100%', backgroundColor: '#00B2A9', borderRadius: 4 },
-  budgetTexts: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  budgetText: { fontSize: 12, color: '#64748B' },
+  budgetSubtitle: { fontSize: 13, marginBottom: 12, fontWeight: '500' },
+  budgetTrack: { height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 10 },
+  budgetFill: { height: '100%', borderRadius: 4 },
+  budgetTexts: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  budgetText: { fontSize: 12 },
   
-  tipBox: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16, marginTop: 12 },
-  tipHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
-  tipTitle: { fontSize: 13, color: '#3B82F6', fontWeight: '700' },
-  tipText: { fontSize: 13, color: '#475569', lineHeight: 20, marginBottom: 12 },
-  tipBold: { color: '#0F172A', fontWeight: '700' },
-  tipButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#FFF', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', gap: 4 },
-  tipButtonText: { color: '#3B82F6', fontSize: 12, fontWeight: '600' },
+  tipBox: { borderRadius: 18, padding: 16, marginTop: 12 },
+  tipHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
+  tipTitle: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.3 },
+  tipText: { fontSize: 13, lineHeight: 20, marginBottom: 12, fontWeight: '500' },
+  tipBold: { fontWeight: '800' },
+  tipButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, gap: 6 },
+  tipButtonText: { fontSize: 12, fontWeight: '700' },
 
   // Estilos de la Pestaña "Productos"
-  searchBoxContainer: { paddingHorizontal: 20, paddingVertical: 20, backgroundColor: '#FFFFFF' },
+  searchBoxContainer: { paddingHorizontal: 20, paddingVertical: 14 },
   searchBox: { 
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', 
-    borderRadius: 16, paddingHorizontal: 16, height: 50, borderWidth: 1, borderColor: '#F1F5F9'
+    flexDirection: 'row', alignItems: 'center', 
+    borderRadius: 16, paddingHorizontal: 16, height: 50, borderWidth: 1
   },
   searchIcon: { marginRight: 10 },
-  searchInput: { flex: 1, height: '100%', fontSize: 15, color: '#0F172A' },
+  searchInput: { flex: 1, height: '100%', fontSize: 14, fontWeight: '600' },
   barcodeBtn: { padding: 4, marginLeft: 10 },
   
-  searchResultsContainer: { marginBottom: 20 },
-  searchResultsTitle: { fontSize: 14, fontWeight: '600', color: '#64748B', marginBottom: 12 },
+  searchResultsContainer: { marginBottom: 16 },
+  searchResultsTitle: { fontSize: 13, fontWeight: '700', marginBottom: 10, paddingLeft: 4 },
   searchResultItem: { 
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', 
-    padding: 16, borderRadius: 16, marginBottom: 8, borderWidth: 1, borderColor: '#BFF3F0' 
+    flexDirection: 'row', alignItems: 'center', 
+    padding: 14, borderRadius: 16, marginBottom: 8, borderWidth: 1
   },
   searchResultInfo: { flex: 1, marginLeft: 12 },
-  searchResultName: { fontSize: 15, fontWeight: '600', color: '#0F172A' },
-  searchResultUnit: { fontSize: 13, color: '#64748B', marginTop: 2 },
+  searchResultName: { fontSize: 14, fontWeight: '700' },
+  searchResultUnit: { fontSize: 12, marginTop: 2 },
 
   productCard: { 
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 20, 
-    padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9',
-    shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 1
+    flexDirection: 'row', alignItems: 'center', borderRadius: 24, 
+    padding: 16, marginBottom: 12
   },
-  productIconBox: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#E6F8F7', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-  productInfo: { flex: 1, flexShrink: 1, marginRight: 12 },
-  productName: { fontSize: 15, fontWeight: '700', color: '#0F172A', marginBottom: 4, flexShrink: 1 },
-  productUnit: { fontSize: 13, color: '#64748B' },
+  productIconBox: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  productInfo: { flex: 1, flexShrink: 1, marginRight: 8 },
+  productName: { fontSize: 14, fontWeight: '800', marginBottom: 3, flexShrink: 1 },
+  productUnit: { fontSize: 12, fontWeight: '500' },
   
-  quantityControlsVertical: { flexDirection: 'column', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 12, padding: 4 },
-  qtyBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderRadius: 8, shadowColor: '#94A3B8', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 1 },
-  qtyTextVertical: { fontSize: 15, fontWeight: '700', color: '#0F172A', marginVertical: 8 },
+  quantityControlsVertical: { flexDirection: 'column', alignItems: 'center', borderRadius: 14, padding: 4, gap: 2 },
+  qtyBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center', borderRadius: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 1, elevation: 1 },
+  qtyTextVertical: { fontSize: 14, fontWeight: '800', marginVertical: 4 },
 
-  aiSuggestBtn: { marginTop: 10, borderRadius: 16, overflow: 'hidden' },
+  aiSuggestBtn: { marginTop: 10, borderRadius: 18, overflow: 'hidden' },
   aiSuggestGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, gap: 8 },
-  aiSuggestText: { color: '#00B2A9', fontSize: 14, fontWeight: '700' },
+  aiSuggestText: { fontSize: 13, fontWeight: '800' },
 
-  // Estilos Pestaña "Comparar"
-  compareEmptyState: { alignItems: 'center', padding: 20 },
-  compareEmptyTitle: { fontSize: 20, fontWeight: '800', color: '#0F172A', marginTop: 16, marginBottom: 8 },
-  compareEmptySub: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22, marginBottom: 24 },
-  primaryButton: { backgroundColor: '#00B2A9', paddingHorizontal: 24, paddingVertical: 14, borderRadius: 16 },
-  primaryButtonText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
   deleteBtn: {
     width: 36,
     height: 36,
-    borderRadius: 10,
-    backgroundColor: '#FEF2F2',
+    borderRadius: 12,
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#FEE2E2',
   },
 
   // Estilos del Modal Menu
@@ -820,14 +867,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   menuContainer: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     paddingVertical: 20,
     paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 20,
   },
@@ -839,36 +885,46 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   menuText: {
-    fontSize: 16,
-    color: '#0F172A',
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
   menuDivider: {
     height: 1,
-    backgroundColor: '#F1F5F9',
     marginVertical: 4,
     marginHorizontal: 8,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingVertical: 20,
-    paddingHorizontal: 16,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
     maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 24,
   },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  modalTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
-  branchProductName: { fontSize: 18, fontWeight: '800', color: '#1E293B', marginBottom: 15 },
-  cheapestBranchBadge: { backgroundColor: '#FEF3C7', padding: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  cheapestBranchText: { color: '#B45309', fontWeight: '700', marginLeft: 8, flex: 1, fontSize: 13 },
-  modalLabel: { fontSize: 16, fontWeight: '700', color: '#475569', marginBottom: 10 },
-  branchCard: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, padding: 15, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between' },
-  branchSupermarket: { fontSize: 15, fontWeight: '800', color: '#1E293B' },
-  branchStoreName: { fontSize: 13, color: '#475569', marginTop: 2 },
-  branchAddress: { fontSize: 11, color: '#94A3B8', marginTop: 2 },
-  branchDistance: { fontSize: 12, color: '#64748B', marginLeft: 4 },
-  branchPrice: { fontSize: 16, fontWeight: '800', color: '#16A34A', marginBottom: 6 },
-  inStockBadge: { backgroundColor: '#DCFCE7', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  inStockText: { color: '#16A34A', fontSize: 10, fontWeight: '700' }
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalTitle: { fontSize: 18, fontWeight: '900', letterSpacing: -0.5 },
+  branchProductName: { fontSize: 16, fontWeight: '800', marginBottom: 12 },
+  cheapestBranchBadge: { padding: 12, borderRadius: 14, flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  cheapestBranchText: { fontWeight: '700', flex: 1, fontSize: 13, lineHeight: 18 },
+  modalLabel: { fontSize: 13, fontWeight: '700', marginBottom: 10 },
+  branchCard: { borderWidth: 1, borderRadius: 16, padding: 14, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between' },
+  branchSupermarket: { fontSize: 14, fontWeight: '800' },
+  branchStoreName: { fontSize: 12, marginTop: 2, fontWeight: '500' },
+  branchAddress: { fontSize: 11, marginTop: 2 },
+  branchDistance: { fontSize: 11, fontWeight: '600' },
+  branchPrice: { fontSize: 15, fontWeight: '800', marginBottom: 6 },
+  inStockBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  inStockText: { fontSize: 10, fontWeight: '800' }
 });

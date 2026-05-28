@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Query } from '@nestjs/common';
+import { Controller, Post, Get, Param, Query, Body } from '@nestjs/common';
 import { ScraperService } from './scraper.service';
 
 @Controller('scraper')
@@ -11,8 +11,8 @@ export class ScraperController {
    * Expected duration: 15-30 minutes for a full run.
    */
   @Post('run')
-  async runScraping() {
-    const result = await this.scraperService.runDailyScraping();
+  async runScraping(@Body('supermarkets') supermarkets?: string[]) {
+    const result = await this.scraperService.runDailyScraping(supermarkets);
     return {
       message: result.success
         ? `✅ Scraping completo: ${result.productsScraped} productos actualizados`
@@ -53,13 +53,13 @@ export class ScraperController {
   }
 
   /**
-   * GET /scraper/search?q=query
-   * Search for canonical products by name.
+   * GET /scraper/search?q=query&category=optional
+   * Search for canonical products by name, optionally filtered by category.
    */
   @Get('search')
-  searchProducts(@Query('q') query: string) {
+  searchProducts(@Query('q') query: string, @Query('category') category?: string) {
     if (!query || query.length < 2) return [];
-    return this.scraperService.searchProducts(query);
+    return this.scraperService.searchProducts(query, category);
   }
 
   /**

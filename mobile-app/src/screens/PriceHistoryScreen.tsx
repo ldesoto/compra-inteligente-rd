@@ -5,10 +5,13 @@ import { Feather } from '@expo/vector-icons';
 import { useAppStore } from '../store/useAppStore';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { AddToListModal } from '../components/AddToListModal';
+import { PremiumCard } from '../components/PremiumCard';
+import { themeColors, themeLayout, themeShadows, themeTypography } from '../theme/DesignSystem';
 
 export const PriceHistoryScreen = ({ route, navigation }: any) => {
   const { productId, productName } = route.params || {};
-  const { fetchProductHistory, compareSingleProduct, fetchSmartSubstitutes } = useAppStore();
+  const { fetchProductHistory, compareSingleProduct, fetchSmartSubstitutes, darkMode } = useAppStore();
+  const colors = darkMode ? themeColors.dark : themeColors.light;
   
   const [productData, setProductData] = useState<any>(null);
   const [intelligentData, setIntelligentData] = useState<any>(null);
@@ -47,16 +50,20 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Feather name="chevron-left" size={24} color="#00B2A9" />
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            onPress={() => navigation.goBack()} 
+            style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}
+          >
+            <Feather name="chevron-left" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={styles.title}>Historial de Precios</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>Historial de Precios</Text>
         </View>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#00B2A9" />
-          <Text style={{ marginTop: 12, color: '#6B7280' }}>Cargando historial...</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ marginTop: 12, color: colors.textMuted, fontWeight: '500' }}>Cargando historial...</Text>
         </View>
       </SafeAreaView>
     );
@@ -64,16 +71,20 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
 
   if (!productData) {
     return (
-      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Feather name="chevron-left" size={24} color="#00B2A9" />
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            onPress={() => navigation.goBack()} 
+            style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}
+          >
+            <Feather name="chevron-left" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={styles.title}>Historial de Precios</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>Historial de Precios</Text>
         </View>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Feather name="alert-circle" size={48} color="#D1D5DB" />
-          <Text style={{ marginTop: 12, color: '#6B7280' }}>No se encontró información de precios.</Text>
+          <Feather name="alert-circle" size={48} color={colors.textLight} />
+          <Text style={{ marginTop: 12, color: colors.textMuted }}>No se encontró información de precios.</Text>
         </View>
       </SafeAreaView>
     );
@@ -84,12 +95,12 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
     'la sirena': '#EF4444',
     'nacional': '#008B47',
     'plaza lama': '#EAB308',
-    'bravo': '#059669', // Just in case
+    'bravo': colors.primary,
   };
 
   const getStoreColor = (name: string) => {
     const key = name.toLowerCase();
-    return storesColors[key] || '#3B82F6';
+    return storesColors[key] || colors.info;
   };
 
   const sortedStores = Object.entries(productData.stores)
@@ -104,54 +115,68 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
   });
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Feather name="chevron-left" size={24} color="#00B2A9" />
+        <TouchableOpacity 
+          activeOpacity={0.8}
+          onPress={() => navigation.goBack()} 
+          style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}
+        >
+          <Feather name="chevron-left" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.title}>Historial de Precios</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>Historial de Precios</Text>
       </View>
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
-        {/* Hero */}
-        <View style={styles.heroCard}>
+        {/* Hero Banner Card */}
+        <PremiumCard gradient="softCard" style={styles.heroCard}>
           <View style={styles.heroIconRow}>
-            <View style={styles.heroIconBg}>
-              <Feather name="bar-chart-2" size={20} color="#00B2A9" />
+            <View style={[styles.heroIconBg, { backgroundColor: colors.surface }]}>
+              <Feather name="bar-chart-2" size={20} color={colors.primary} />
             </View>
-            <Text style={styles.heroLabel}>Tendencia General</Text>
+            <Text style={[styles.heroLabel, { color: colors.primary }]}>Tendencia General</Text>
           </View>
-          <Text style={styles.heroText}>Controla cómo se ha movido el precio de este producto en los últimos meses.</Text>
-        </View>
+          <Text style={[styles.heroText, { color: colors.textSecondary }]}>
+            Controla cómo se ha movido el precio de este producto en los últimos meses y toma la mejor decisión de compra.
+          </Text>
+        </PremiumCard>
 
-        {/* Product History Card */}
-        <Text style={styles.sectionTitle}>Movimiento Actual</Text>
-        <View style={styles.productCard}>
+        {/* Product Card */}
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Movimiento Actual</Text>
+        <PremiumCard variant="surface" style={styles.productCard}>
           <View style={styles.productHeader}>
             <View style={{ flex: 1, paddingRight: 8 }}>
-              <Text style={styles.productName}>{productData.name}</Text>
-              <Text style={styles.productSub}>Actualizado hoy · {Object.keys(productData.stores).length} tiendas</Text>
+              <Text style={[styles.productName, { color: colors.textPrimary }]}>{productData.name}</Text>
+              <Text style={[styles.productSub, { color: colors.textMuted }]}>
+                Actualizado hoy · {Object.keys(productData.stores).length} tiendas
+              </Text>
             </View>
             <View style={{ alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <TouchableOpacity 
-                style={styles.addBtn}
+                activeOpacity={0.8}
+                style={[styles.addBtn, { backgroundColor: colors.primaryLight }]}
                 onPress={() => openAddModal(productId, productData.name)}
               >
-                <Feather name="plus" size={20} color="#00B2A9" />
+                <Feather name="plus" size={20} color={colors.primary} />
               </TouchableOpacity>
               <View style={[styles.trendContainer, { marginTop: 8 }]}>
-                <View style={[styles.trendBg, {
-                  backgroundColor: productData.trend === 'down' ? '#ECFDF5' : productData.trend === 'up' ? '#FEF2F2' : '#F3F4F6'
-                }]}>
+                <View style={[
+                  styles.trendBg, 
+                  {
+                    backgroundColor: productData.trend === 'down' ? colors.primaryLight : productData.trend === 'up' ? colors.dangerLight : colors.surfaceAlt
+                  }
+                ]}>
                   <Feather 
                     name={productData.trend === 'up' ? 'trending-up' : productData.trend === 'down' ? 'trending-down' : 'minus'} 
                     size={16} 
-                    color={productData.trend === 'down' ? '#059669' : productData.trend === 'up' ? '#EF4444' : '#6B7280'} 
+                    color={productData.trend === 'down' ? colors.primary : productData.trend === 'up' ? colors.danger : colors.textMuted} 
                   />
                 </View>
                 <Text style={[
                   styles.trendText,
-                  { color: productData.trend === 'down' ? '#059669' : productData.trend === 'up' ? '#EF4444' : '#6B7280' }
+                  { color: productData.trend === 'down' ? colors.primary : productData.trend === 'up' ? colors.danger : colors.textMuted }
                 ]}>
                   {productData.trend === 'up' ? `+RD$${(productData.current - productData.previous).toFixed(2)}` :
                     productData.trend === 'down' ? `-RD$${(productData.previous - productData.current).toFixed(2)}` : 'Estable'}
@@ -162,62 +187,85 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
 
           <View style={styles.storesList}>
             {sortedStores.map(([store, price], i) => (
-              <View key={store} style={styles.storeRow}>
-                <View style={[styles.storeRank, i === 0 && styles.storeRankBest]}>
-                  <Text style={[styles.storeRankText, i === 0 && { color: '#fff' }]}>{i + 1}</Text>
+              <View key={store} style={[styles.storeRow, { borderBottomWidth: i === sortedStores.length - 1 ? 0 : 1, borderBottomColor: colors.border }]}>
+                <View style={[styles.storeRank, i === 0 && { backgroundColor: colors.primary }]}>
+                  <Text style={[styles.storeRankText, i === 0 && { color: '#FFFFFF' }]}>{i + 1}</Text>
                 </View>
-                <Text style={[styles.storeName, i === 0 && styles.storeNameBest]}>{store}</Text>
-                <Text style={[styles.storePrice, i === 0 && styles.storePriceBest]}>
+                <Text style={[styles.storeName, i === 0 ? { color: colors.textPrimary } : { color: colors.textSecondary }]}>
+                  {store}
+                </Text>
+                <Text style={[styles.storePrice, i === 0 ? { color: colors.primary, fontSize: 16 } : { color: colors.textSecondary }]}>
                   RD$ {(price as number).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                 </Text>
                 {i === 0 && (
-                  <View style={styles.cheapestTag}>
-                    <Feather name="check-circle" size={12} color="#059669" />
-                    <Text style={styles.cheapestTagText}>Más barato</Text>
+                  <View style={[styles.cheapestTag, { backgroundColor: colors.primaryLight }]}>
+                    <Feather name="check-circle" size={12} color={colors.primary} />
+                    <Text style={[styles.cheapestTagText, { color: colors.primary }]}>Más barato</Text>
                   </View>
                 )}
               </View>
             ))}
           </View>
-        </View>
+        </PremiumCard>
 
         {/* Intelligent Motor Analysis */}
         {intelligentData && intelligentData.comparisons && intelligentData.comparisons.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>Análisis Inteligente (Motor AI)</Text>
-            <View style={[styles.productCard, { borderColor: '#E0E7FF', backgroundColor: '#F8FAFC' }]}>
-              
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Análisis Inteligente (Motor AI)</Text>
+            <PremiumCard 
+              variant="surface" 
+              style={[styles.productCard, { borderColor: colors.premium, borderWidth: 1.5 }]}
+            >
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 13, color: '#64748B', fontWeight: '700' }}>AHORRO POTENCIAL</Text>
-                  <Text style={{ fontSize: 24, color: '#059669', fontWeight: '900' }}>
+                  <Text style={{ fontSize: 11, color: colors.textLight, fontWeight: '700', textTransform: 'uppercase' }}>
+                    AHORRO POTENCIAL
+                  </Text>
+                  <Text style={{ fontSize: 24, color: colors.primary, fontWeight: '900' }}>
                     RD$ {intelligentData.maxSavings.toLocaleString('es-DO')} 
-                    <Text style={{ fontSize: 14, color: '#10B981' }}> ({intelligentData.savingsPercentage}%)</Text>
+                    <Text style={{ fontSize: 14, color: colors.primary }}> ({intelligentData.savingsPercentage}%)</Text>
                   </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={{ fontSize: 13, color: '#64748B', fontWeight: '700' }}>MEDIDA</Text>
-                  <Text style={{ fontSize: 16, color: '#0F172A', fontWeight: '800' }}>{intelligentData.baseWeight} {intelligentData.baseUnit}</Text>
+                  <Text style={{ fontSize: 11, color: colors.textLight, fontWeight: '700', textTransform: 'uppercase' }}>
+                    MEDIDA
+                  </Text>
+                  <Text style={{ fontSize: 16, color: colors.textPrimary, fontWeight: '800' }}>
+                    {intelligentData.baseWeight} {intelligentData.baseUnit}
+                  </Text>
                 </View>
               </View>
 
               <View style={styles.storesList}>
                 {intelligentData.comparisons.map((comp: any, i: number) => (
-                  <View key={comp.supermarketId} style={[styles.storeRow, { paddingVertical: 4 }]}>
-                    <Text style={[styles.storeName, i === 0 && styles.storeNameBest, { flex: 0.8 }]}>{comp.supermarketName}</Text>
+                  <View key={comp.supermarketId ? `${comp.supermarketId}-${i}` : `comp-${i}`} style={[styles.storeRow, { paddingVertical: 4 }]}>
+                    <Text style={[styles.storeName, i === 0 ? { color: colors.textPrimary } : { color: colors.textSecondary }, { flex: 0.8 }]}>
+                      {comp.supermarketName}
+                    </Text>
                     
                     <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                      <Text style={[styles.storePrice, i === 0 && styles.storePriceBest]}>
+                      <Text style={[styles.storePrice, i === 0 ? { color: colors.primary, fontSize: 16 } : { color: colors.textSecondary }]}>
                         RD$ {(comp.price).toLocaleString('es-DO')}
                       </Text>
                       {comp.unitPrice ? (
-                        <Text style={{ fontSize: 11, color: '#94A3B8' }}>RD$ {comp.unitPrice.toFixed(2)} / {intelligentData.baseUnit}</Text>
+                        <Text style={{ fontSize: 11, color: colors.textLight }}>
+                          RD$ {comp.unitPrice.toFixed(2)} / {intelligentData.baseUnit}
+                        </Text>
                       ) : null}
                     </View>
 
                     <View style={{ width: 60, alignItems: 'flex-end' }}>
-                      <View style={{ backgroundColor: comp.score >= 80 ? '#D1FAE5' : comp.score >= 50 ? '#FEF3C7' : '#FEE2E2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
-                        <Text style={{ fontSize: 11, fontWeight: '800', color: comp.score >= 80 ? '#059669' : comp.score >= 50 ? '#D97706' : '#DC2626' }}>
+                      <View style={{ 
+                        backgroundColor: comp.score >= 80 ? colors.primaryLight : comp.score >= 50 ? colors.warningLight : colors.dangerLight, 
+                        paddingHorizontal: 6, 
+                        paddingVertical: 2, 
+                        borderRadius: 6 
+                      }}>
+                        <Text style={{ 
+                          fontSize: 11, 
+                          fontWeight: '800', 
+                          color: comp.score >= 80 ? colors.primary : comp.score >= 50 ? colors.warning : colors.danger 
+                        }}>
                           {comp.score} pts
                         </Text>
                       </View>
@@ -225,125 +273,149 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
                   </View>
                 ))}
               </View>
-            </View>
-          </>
+            </PremiumCard>
+          </View>
         )}
 
         {/* Chart */}
         {productData.history && productData.history.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>Tendencia de los últimos meses</Text>
-            <View style={styles.chartCard}>
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Tendencia de los últimos meses</Text>
+            <PremiumCard variant="surface" style={styles.chartCard}>
               <View style={styles.chartLegend}>
                 {Object.keys(productData.stores).map((storeName) => (
                   <View key={storeName} style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: getStoreColor(storeName) }]} />
-                    <Text style={styles.legendText}>{storeName}</Text>
+                    <Text style={[styles.legendText, { color: colors.textSecondary }]}>{storeName}</Text>
                   </View>
                 ))}
               </View>
               {productData.history.map((month: any, i: number) => (
                 <View key={i} style={styles.chartRow}>
-                  <Text style={styles.chartMonth}>{month.date.substring(5, 7)}/{month.date.substring(2, 4)}</Text>
-                  <View style={styles.chartBars}>
+                  <Text style={[styles.chartMonth, { color: colors.textMuted }]}>
+                    {month.date.substring(5, 7)}/{month.date.substring(2, 4)}
+                  </Text>
+                  <View style={[styles.chartBars, { backgroundColor: colors.surfaceAlt }]}>
                     {Object.keys(month).filter(k => k !== 'date').map((storeKey) => {
                       const price = month[storeKey];
                       const widthPct = Math.max((price / maxChartPrice) * 100, 5);
                       return (
                         <View key={storeKey} style={[styles.chartBar, { width: `${widthPct}%`, backgroundColor: getStoreColor(storeKey), marginBottom: 2 }]}>
-                          <Text style={styles.chartBarLabel}>RD$ {price.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                          <Text style={styles.chartBarLabel}>RD$ {price.toLocaleString('es-DO')}</Text>
                         </View>
                       );
                     })}
                   </View>
                 </View>
               ))}
-            </View>
-          </>
+            </PremiumCard>
+          </View>
         )}
 
         {/* Substitutes Engine */}
         {substitutesData && substitutesData.success && (
-          <>
+          <View style={styles.section}>
             {substitutesData.equivalents?.length > 0 && (
-              <>
-                <Text style={styles.sectionTitle}>Sustitutos Equivalentes (Calidad Similar)</Text>
-                <View style={styles.productCard}>
+              <View style={{ marginBottom: 20 }}>
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+                  Sustitutos Equivalentes (Calidad Similar)
+                </Text>
+                <PremiumCard variant="surface" style={styles.productCard}>
                   {substitutesData.equivalents.map((sub: any, i: number) => (
-                    <View key={i} style={[styles.storeRow, { paddingVertical: 8, borderBottomWidth: i === substitutesData.equivalents.length - 1 ? 0 : 1 }]}>
+                    <View key={i} style={[styles.storeRow, { paddingVertical: 8, borderBottomWidth: i === substitutesData.equivalents.length - 1 ? 0 : 1, borderBottomColor: colors.border }]}>
                       <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#1E293B' }}>{sub.name}</Text>
-                        <Text style={{ fontSize: 12, color: '#64748B' }}>{sub.brand}</Text>
+                        <Text style={[styles.subTitle, { color: colors.textPrimary }]}>{sub.name}</Text>
+                        <Text style={{ fontSize: 12, color: colors.textMuted }}>{sub.brand}</Text>
                       </View>
                       <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '800', color: '#0F172A' }}>RD$ {sub.avgPrice}</Text>
-                        <View style={{ backgroundColor: sub.score >= 100 ? '#D1FAE5' : '#FEF3C7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4 }}>
-                          <Text style={{ fontSize: 10, fontWeight: '800', color: sub.score >= 100 ? '#059669' : '#D97706' }}>Score: {sub.score}</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '800', color: colors.textPrimary }}>RD$ {sub.avgPrice}</Text>
+                        <View style={{ backgroundColor: sub.score >= 100 ? colors.primaryLight : colors.warningLight, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4 }}>
+                          <Text style={{ fontSize: 10, fontWeight: '800', color: sub.score >= 100 ? colors.primary : colors.warning }}>Score: {sub.score}</Text>
                         </View>
                       </View>
                       <TouchableOpacity 
                         onPress={() => openAddModal(sub.id, sub.name)}
-                        style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', alignSelf: 'center' }}
+                        style={[styles.addBtn, { backgroundColor: colors.surfaceAlt }]}
                       >
-                        <Feather name="plus" size={18} color="#0F172A" />
+                        <Feather name="plus" size={18} color={colors.textPrimary} />
                       </TouchableOpacity>
                     </View>
                   ))}
-                </View>
-              </>
+                </PremiumCard>
+              </View>
             )}
 
             {substitutesData.cheaperBrands?.length > 0 && (
-              <>
-                <Text style={styles.sectionTitle}>Alternativas Más Baratas</Text>
-                <View style={[styles.productCard, { borderColor: '#BBF7D0', backgroundColor: '#F0FDF4' }]}>
+              <View style={{ marginBottom: 20 }}>
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Alternativas Más Baratas</Text>
+                <PremiumCard 
+                  variant="surface"
+                  style={[
+                    styles.productCard, 
+                    { 
+                      borderColor: colors.primary, 
+                      borderWidth: 1.5,
+                      backgroundColor: darkMode ? '#1F2E27' : '#F0FDF4' 
+                    }
+                  ]}
+                >
                   {substitutesData.cheaperBrands.map((sub: any, i: number) => (
-                    <View key={i} style={[styles.storeRow, { paddingVertical: 8, borderBottomColor: '#DCFCE7', borderBottomWidth: i === substitutesData.cheaperBrands.length - 1 ? 0 : 1 }]}>
+                    <View key={i} style={[styles.storeRow, { paddingVertical: 8, borderBottomColor: darkMode ? '#2E4238' : '#DCFCE7', borderBottomWidth: i === substitutesData.cheaperBrands.length - 1 ? 0 : 1 }]}>
                       <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#166534' }}>{sub.name}</Text>
-                        <Text style={{ fontSize: 12, color: '#15803D' }}>{sub.brand}</Text>
+                        <Text style={[styles.subTitle, { color: darkMode ? '#A7F3D0' : '#166534' }]}>{sub.name}</Text>
+                        <Text style={{ fontSize: 12, color: darkMode ? '#34D399' : '#15803D' }}>{sub.brand}</Text>
                       </View>
                       <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '800', color: '#14532D' }}>RD$ {sub.avgPrice}</Text>
-                        <Text style={{ fontSize: 11, color: '#16A34A', marginTop: 2 }}>Unidad: RD$ {sub.unitPrice}</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '800', color: darkMode ? '#A7F3D0' : '#14532D' }}>RD$ {sub.avgPrice}</Text>
+                        <Text style={{ fontSize: 11, color: colors.primary, marginTop: 2 }}>Unidad: RD$ {sub.unitPrice}</Text>
                       </View>
                       <TouchableOpacity 
                         onPress={() => openAddModal(sub.id, sub.name)}
-                        style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#DCFCE7', justifyContent: 'center', alignItems: 'center', alignSelf: 'center' }}
+                        style={[styles.addBtn, { backgroundColor: colors.primaryLight }]}
                       >
-                        <Feather name="plus" size={18} color="#166534" />
+                        <Feather name="plus" size={18} color={colors.primary} />
                       </TouchableOpacity>
                     </View>
                   ))}
-                </View>
-              </>
+                </PremiumCard>
+              </View>
             )}
 
             {substitutesData.premiumBrands?.length > 0 && (
-              <>
-                <Text style={styles.sectionTitle}>Marcas Premium</Text>
-                <View style={[styles.productCard, { borderColor: '#E9D5FF', backgroundColor: '#FAF5FF' }]}>
+              <View style={{ marginBottom: 20 }}>
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Marcas Premium</Text>
+                <PremiumCard 
+                  variant="surface"
+                  style={[
+                    styles.productCard, 
+                    { 
+                      borderColor: colors.premium, 
+                      borderWidth: 1.5,
+                      backgroundColor: darkMode ? '#2A1F3E' : '#FAF5FF' 
+                    }
+                  ]}
+                >
                   {substitutesData.premiumBrands.map((sub: any, i: number) => (
-                    <View key={i} style={[styles.storeRow, { paddingVertical: 8, borderBottomColor: '#F3E8FF', borderBottomWidth: i === substitutesData.premiumBrands.length - 1 ? 0 : 1 }]}>
+                    <View key={i} style={[styles.storeRow, { paddingVertical: 8, borderBottomColor: darkMode ? '#3E2E5B' : '#F3E8FF', borderBottomWidth: i === substitutesData.premiumBrands.length - 1 ? 0 : 1 }]}>
                       <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#6B21A8' }}>{sub.name}</Text>
-                        <Text style={{ fontSize: 12, color: '#7E22CE' }}>{sub.brand}</Text>
+                        <Text style={[styles.subTitle, { color: darkMode ? '#DDD6FE' : '#6B21A8' }]}>{sub.name}</Text>
+                        <Text style={{ fontSize: 12, color: darkMode ? '#A78BFA' : '#7E22CE' }}>{sub.brand}</Text>
                       </View>
                       <View style={{ alignItems: 'flex-end', marginRight: 12 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '800', color: '#581C87' }}>RD$ {sub.avgPrice}</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '800', color: darkMode ? '#DDD6FE' : '#581C87' }}>RD$ {sub.avgPrice}</Text>
                       </View>
                       <TouchableOpacity 
                         onPress={() => openAddModal(sub.id, sub.name)}
-                        style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#F3E8FF', justifyContent: 'center', alignItems: 'center', alignSelf: 'center' }}
+                        style={[styles.addBtn, { backgroundColor: colors.premiumLight }]}
                       >
-                        <Feather name="plus" size={18} color="#6B21A8" />
+                        <Feather name="plus" size={18} color={colors.premium} />
                       </TouchableOpacity>
                     </View>
                   ))}
-                </View>
-              </>
+                </PremiumCard>
+              </View>
             )}
-          </>
+          </View>
         )}
 
         <View style={{ height: 40 }} />
@@ -360,50 +432,213 @@ export const PriceHistoryScreen = ({ route, navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAFA' },
-  scroll: { padding: 20, paddingTop: 10 },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingTop: 20, gap: 12 },
-  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#E6F8F7', justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: '800', color: '#00B2A9', letterSpacing: -0.5 },
-  
-  heroCard: { backgroundColor: '#EEF2FF', borderRadius: 24, padding: 24, marginBottom: 32, borderWidth: 1, borderColor: '#C7D2FE' },
-  heroIconRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-  heroIconBg: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
-  heroLabel: { fontSize: 15, fontWeight: '800', color: '#4F46E5', textTransform: 'uppercase', letterSpacing: 0.5 },
-  heroText: { color: '#4B5563', fontSize: 15, lineHeight: 22, fontWeight: '500' },
-  
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#374151', marginBottom: 16, letterSpacing: -0.3 },
-  
-  productCard: { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.02, shadowRadius: 8, elevation: 1, borderWidth: 1, borderColor: '#F3F4F6' },
-  productHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 },
-  productName: { fontSize: 16, fontWeight: '700', color: '#1F2937' },
-  productSub: { fontSize: 13, color: '#6B7280', marginTop: 4, fontWeight: '500' },
-  trendContainer: { alignItems: 'center', gap: 4 },
-  trendBg: { width: 36, height: 36, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  trendText: { fontSize: 12, fontWeight: '800' },
-  addBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#E6F8F7', justifyContent: 'center', alignItems: 'center' },
-
-  
-  storesList: { gap: 10 },
-  storeRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  storeRank: { width: 26, height: 26, borderRadius: 8, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' },
-  storeRankBest: { backgroundColor: '#059669' },
-  storeRankText: { fontSize: 12, fontWeight: '800', color: '#6B7280' },
-  storeName: { flex: 1, fontSize: 14, color: '#6B7280', fontWeight: '600' },
-  storeNameBest: { color: '#1F2937' },
-  storePrice: { fontSize: 15, fontWeight: '700', color: '#6B7280' },
-  storePriceBest: { color: '#059669', fontSize: 16 },
-  cheapestTag: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#ECFDF5', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  cheapestTagText: { fontSize: 11, color: '#059669', fontWeight: '800' },
-  
-  chartCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#F3F4F6', marginBottom: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.02, shadowRadius: 8, elevation: 1 },
-  chartLegend: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginBottom: 20 },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { fontSize: 13, color: '#6B7280', fontWeight: '600' },
-  chartRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 12 },
-  chartMonth: { fontSize: 13, color: '#6B7280', fontWeight: '700', width: 30 },
-  chartBars: { flex: 1, height: 32, backgroundColor: '#F3F4F6', borderRadius: 8, overflow: 'hidden' },
-  chartBar: { height: '100%', borderRadius: 8, justifyContent: 'center', paddingLeft: 10 },
-  chartBarLabel: { fontSize: 11, color: '#fff', fontWeight: '800' },
+  safe: { 
+    flex: 1, 
+  },
+  scroll: { 
+    padding: 20, 
+    paddingTop: 10 
+  },
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 20,
+    paddingTop: 20, 
+    paddingBottom: 16,
+    gap: 12 
+  },
+  backBtn: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  title: { 
+    fontSize: themeTypography.fontSizes.xl, 
+    fontWeight: '800', 
+    letterSpacing: -0.5 
+  },
+  heroCard: { 
+    padding: themeLayout.spacing.lg, 
+    marginBottom: 32,
+    borderWidth: 1,
+  },
+  heroIconRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 8, 
+    marginBottom: 12 
+  },
+  heroIconBg: { 
+    width: 36, 
+    height: 36, 
+    borderRadius: 12, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    ...themeShadows.soft,
+  },
+  heroLabel: { 
+    fontSize: 14, 
+    fontWeight: '800', 
+    textTransform: 'uppercase', 
+    letterSpacing: 0.5 
+  },
+  heroText: { 
+    fontSize: themeTypography.fontSizes.sm, 
+    lineHeight: 22, 
+    fontWeight: '500' 
+  },
+  sectionTitle: { 
+    fontSize: themeTypography.fontSizes.md, 
+    fontWeight: '800', 
+    marginBottom: 16, 
+    letterSpacing: -0.3 
+  },
+  productCard: { 
+    padding: themeLayout.spacing.lg, 
+    marginBottom: 16, 
+    borderWidth: 1, 
+  },
+  productHeader: { 
+    flexDirection: 'row', 
+    alignItems: 'flex-start', 
+    marginBottom: 16 
+  },
+  productName: { 
+    fontSize: themeTypography.fontSizes.md, 
+    fontWeight: '700', 
+  },
+  productSub: { 
+    fontSize: 13, 
+    marginTop: 4, 
+    fontWeight: '500' 
+  },
+  trendContainer: { 
+    alignItems: 'center', 
+    gap: 4 
+  },
+  trendBg: { 
+    width: 36, 
+    height: 36, 
+    borderRadius: 12, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  trendText: { 
+    fontSize: 12, 
+    fontWeight: '800' 
+  },
+  addBtn: { 
+    width: 36, 
+    height: 36, 
+    borderRadius: 18, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  storesList: { 
+    gap: 10 
+  },
+  storeRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingVertical: 10,
+    gap: 10 
+  },
+  storeRank: { 
+    width: 26, 
+    height: 26, 
+    borderRadius: 8, 
+    backgroundColor: '#F3F4F6', 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  storeRankText: { 
+    fontSize: 12, 
+    fontWeight: '800', 
+    color: '#6B7280' 
+  },
+  storeName: { 
+    flex: 1, 
+    fontSize: 14, 
+    fontWeight: '600' 
+  },
+  storePrice: { 
+    fontSize: 15, 
+    fontWeight: '700', 
+  },
+  cheapestTag: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 4, 
+    paddingHorizontal: 8, 
+    paddingVertical: 4, 
+    borderRadius: 8 
+  },
+  cheapestTagText: { 
+    fontSize: 11, 
+    fontWeight: '800' 
+  },
+  chartCard: { 
+    padding: themeLayout.spacing.lg, 
+    borderWidth: 1, 
+    marginBottom: 14, 
+    ...themeShadows.soft,
+  },
+  chartLegend: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: 16, 
+    marginBottom: 20 
+  },
+  legendItem: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 6 
+  },
+  legendDot: { 
+    width: 10, 
+    height: 10, 
+    borderRadius: 5 
+  },
+  legendText: { 
+    fontSize: 13, 
+    fontWeight: '600' 
+  },
+  chartRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 10, 
+    gap: 12 
+  },
+  chartMonth: { 
+    fontSize: 13, 
+    fontWeight: '700', 
+    width: 30 
+  },
+  chartBars: { 
+    flex: 1, 
+    height: 32, 
+    borderRadius: 8, 
+    overflow: 'hidden' 
+  },
+  chartBar: { 
+    height: '100%', 
+    borderRadius: 8, 
+    justifyContent: 'center', 
+    paddingLeft: 10 
+  },
+  chartBarLabel: { 
+    fontSize: 11, 
+    color: '#FFFFFF', 
+    fontWeight: '800' 
+  },
+  section: {
+    marginBottom: 24,
+  },
+  subTitle: {
+    fontSize: 14, 
+    fontWeight: '700',
+  },
 });

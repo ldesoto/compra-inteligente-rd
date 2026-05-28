@@ -19,40 +19,32 @@ export class OcrService {
     // Ensure base64 string doesn't have the data URL prefix for OpenAI if it does
     const base64Data = base64Image.includes('base64,') ? base64Image.split('base64,')[1] : base64Image;
     
+    const isUrl = base64Image.startsWith('http://') || base64Image.startsWith('https://');
+    const formattedImageUrl = isUrl ? base64Image : `data:image/jpeg;base64,${base64Data}`;
+
     let extractedData;
     try {
-      if (base64Data === 'mock') {
-        extractedData = {
-          items: [
-            { rawName: "ARROZ LA GARZA 10 LBS", quantity: 1, unitPrice: 450, totalPrice: 450 },
-            { rawName: "LECHE RICA LISTA 1L", quantity: 2, unitPrice: 70, totalPrice: 140 },
-            { rawName: "ACEITE CRISOL 64OZ", quantity: 1, unitPrice: 300, totalPrice: 300 }
-          ],
-          totalAmount: 890
-        };
-      } else {
-        const response = await this.openai.chat.completions.create({
-          model: 'gpt-4o-mini',
-          response_format: { type: 'json_object' },
-          messages: [
-            {
-              role: 'system',
-              content: 'Eres un sistema de OCR para recibos de supermercados. Extrae todos los productos y devuelve el resultado en JSON estricto con el siguiente esquema: { "items": [{ "rawName": "string", "quantity": "number", "unitPrice": "number", "totalPrice": "number" }], "totalAmount": "number" }'
-            },
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: 'Analiza este recibo:' },
-                { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Data}` } }
-              ]
-            }
-          ]
-        });
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: 'system',
+            content: 'Eres un sistema de OCR para recibos de supermercados. Extrae todos los productos y devuelve el resultado en JSON estricto con el siguiente esquema: { "items": [{ "rawName": "string", "quantity": "number", "unitPrice": "number", "totalPrice": "number" }], "totalAmount": "number" }'
+          },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: 'Analiza este recibo:' },
+              { type: 'image_url', image_url: { url: formattedImageUrl } }
+            ]
+          }
+        ]
+      });
 
-        const jsonStr = response.choices[0]?.message?.content;
-        if (!jsonStr) throw new Error('OpenAI no devolvió datos');
-        extractedData = JSON.parse(jsonStr);
-      }
+      const jsonStr = response.choices[0]?.message?.content;
+      if (!jsonStr) throw new Error('OpenAI no devolvió datos');
+      extractedData = JSON.parse(jsonStr);
     } catch (e) {
       this.logger.error('Error procesando imagen OCR', e);
       return { success: false, message: 'Fallo al escanear la imagen. Intenta con otra foto.' };
