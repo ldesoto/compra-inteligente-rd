@@ -140,7 +140,7 @@ export interface AppState {
   sendChatMessage: (prompt: string) => Promise<any>;
   scanReceipt: (imageBase64: string) => Promise<any>;
   fetchBudgetAnalysis: (listId: string) => Promise<any>;
-  markListAsPurchased: (listId: string, supermarketId: string, totalAmount: number) => Promise<any>;
+  markListAsPurchased: (listId: string, supermarketId: string, totalAmount: number, items: any[]) => Promise<any>;
   searchProducts: (query: string) => Promise<any[]>;
   fetchDashboardData: () => Promise<void>;
   fetchProductHistory: (productId: string) => Promise<any>;
@@ -641,9 +641,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  markListAsPurchased: async (listId: string, supermarketId: string, totalAmount: number) => {
+  markListAsPurchased: async (listId: string, supermarketId: string, totalAmount: number, items: any[]) => {
     try {
-      const res = await api.post(`/lists/${listId}/mark-purchased`, { supermarketId, totalAmount });
+      const res = await api.post(`/lists/${listId}/mark-purchased`, { supermarketId, finalTotal: totalAmount, items });
       
       const { currentList, lists } = get();
       if (currentList && currentList.id === listId) {

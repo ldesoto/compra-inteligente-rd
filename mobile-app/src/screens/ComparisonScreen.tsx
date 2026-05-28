@@ -355,10 +355,18 @@ export const ComparisonScreen = ({ navigation }: any) => {
                 style={[styles.backHomeBtn, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }]} 
                 onPress={async () => {
                   try {
+                    const mappedItems = (selectedStore.foundItems || selectedStore.items || []).map((item: any) => ({
+                      canonicalProdId: item.productId || item.id,
+                      quantity: item.quantity,
+                      confirmedPrice: item.unitPrice,
+                      productNameRaw: item.productName || item.name
+                    }));
+
                     await useAppStore.getState().markListAsPurchased(
                       comparisonResult.listId, 
                       selectedStore.supermarketId || selectedStore.supermarketName, // fallback
-                      selectedStore.totalCost
+                      selectedStore.totalCost,
+                      mappedItems
                     );
                     setSelectedStore(null);
                     Alert.alert('¡Éxito!', 'Compra confirmada y ahorros registrados.');
