@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { isPrivateLabel } from '../utils/private-label';
 type Browser = any;
 type Page = any;
 let chromium: any;
@@ -818,6 +819,8 @@ export class ScraperService {
         // Find the lowest price among matches
         let lowestPrice = 0;
         for (const match of p.productMatches) {
+          if (isPrivateLabel(p.name, match.supermarket.name)) continue;
+
           const price = match.priceHistory[0]?.price || 0;
           if (price > 0 && (lowestPrice === 0 || price < lowestPrice)) {
             lowestPrice = price;
@@ -856,6 +859,8 @@ export class ScraperService {
 
     product.productMatches.forEach(match => {
       const storeName = match.supermarket.name;
+      if (isPrivateLabel(product.name, storeName)) return;
+
       if (match.priceHistory.length > 0) {
         stores[storeName] = match.priceHistory[0].price; // Current price
       }
@@ -876,15 +881,19 @@ export class ScraperService {
     let previous = 0;
     let current = 0;
     
-    const matchWithHistory = product.productMatches.find(m => m.priceHistory.length > 1);
+    // Calculamos trend en base al primero no filtrado
+    const matchWithHistory = product.productMatches.find(m => m.priceHistory.length > 1 && !isPrivateLabel(product.name, m.supermarket.name));
     if (matchWithHistory && matchWithHistory.priceHistory.length >= 2) {
       current = matchWithHistory.priceHistory[0].price;
       previous = matchWithHistory.priceHistory[1].price;
       if (current > previous) trend = 'up';
       else if (current < previous) trend = 'down';
-    } else if (matchWithHistory && matchWithHistory.priceHistory.length === 1) {
-      current = matchWithHistory.priceHistory[0].price;
-      previous = current;
+    } else {
+      const singleMatch = product.productMatches.find(m => m.priceHistory.length === 1 && !isPrivateLabel(product.name, m.supermarket.name));
+      if (singleMatch) {
+        current = singleMatch.priceHistory[0].price;
+        previous = current;
+      }
     }
 
     return {

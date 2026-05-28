@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { isPrivateLabel } from '../utils/private-label';
 
 @Injectable()
 export class CompareService {
@@ -53,15 +54,7 @@ export class CompareService {
       console.log('⚠️ [OSM GPS] Servidor offline o error de API. Activando fallback inteligente de respaldo.', err.message);
     }
 
-    const isPrivateLabel = (prodName: string, supName: string) => {
-      const p = prodName.toLowerCase();
-      const s = supName.toLowerCase();
-      if ((p.includes('wala') || p.includes('sirena') || p.includes('zerca')) && !s.includes('sirena')) return true;
-      if (p.includes('bravo') && !s.includes('bravo')) return true;
-      if (p.includes('líder') && !(s.includes('jumbo') || s.includes('nacional'))) return true;
-      if (p.includes('nacional') && !s.includes('nacional')) return true;
-      return false;
-    };
+    // Eliminar función local isPrivateLabel, ahora usamos this.isPrivateLabel
 
     for (const match of product.productMatches) {
       if (match.priceHistory.length === 0) continue;
@@ -217,15 +210,7 @@ export class CompareService {
 
     const results = [];
 
-    const isPrivateLabel = (prodName: string, supName: string) => {
-      const p = prodName.toLowerCase();
-      const s = supName.toLowerCase();
-      if ((p.includes('wala') || p.includes('sirena') || p.includes('zerca')) && !s.includes('sirena')) return true;
-      if (p.includes('bravo') && !s.includes('bravo')) return true;
-      if (p.includes('líder') && !(s.includes('jumbo') || s.includes('nacional'))) return true;
-      if (p.includes('nacional') && !s.includes('nacional')) return true;
-      return false;
-    };
+    // Eliminar función local isPrivateLabel, ahora usamos this.isPrivateLabel
 
     for (const superm of supermarkets) {
       let total = 0;
@@ -333,6 +318,10 @@ export class CompareService {
         });
 
         if (match && match.priceHistory.length > 0) {
+          if (isPrivateLabel(match.canonicalProduct.name, superm.name)) {
+            missingItems.push(match.canonicalProduct.name);
+            continue;
+          }
           const currentPrice = match.priceHistory[0].price;
           const cost = Math.round(currentPrice * (item.quantity || 1) * 100) / 100;
           total += cost;
@@ -344,7 +333,7 @@ export class CompareService {
             totalCost: Math.round(cost * 100) / 100
           });
         } else {
-          missingItems.push(item.name);
+          missingItems.push(item.name || 'Producto desconocido');
         }
       }
 
@@ -476,7 +465,7 @@ export class CompareService {
         qualityTier: product.qualityTier,
         score: score !== null ? Math.round(score) : Math.round(price > 0 ? 50 : 0)
       };
-    }).filter(r => r.price > 0);
+    }).filter(r => r.price > 0 && !isPrivateLabel(product.name, r.supermarketName));
 
     results.sort((a, b) => a.price - b.price);
 
