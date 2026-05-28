@@ -20,7 +20,7 @@ async function bootstrap() {
     const lowerName = p.name.toLowerCase();
     
     // Fix Chicharron
-    if (despensa && (lowerName.includes('chicharron') || lowerName.includes('chicharrón'))) {
+    if (despensa && (lowerName.includes('chicharron') || lowerName.includes('chicharrón') || lowerName.includes('chicharon') || lowerName.includes('chicharón'))) {
       if (p.categoryId !== despensa.id) {
         await prisma.canonicalProduct.update({ where: { id: p.id }, data: { categoryId: despensa.id } });
         updatedCount++;

@@ -779,7 +779,7 @@ export class ScraperService {
       let finalCategoryId = categoryId;
       const lowerName = normalizedName.toLowerCase();
       
-      if (lowerName.includes('chicharron') || lowerName.includes('chicharrón')) {
+      if (lowerName.includes('chicharron') || lowerName.includes('chicharrón') || lowerName.includes('chicharon') || lowerName.includes('chicharón')) {
         const despensa = await this.prisma.category.findFirst({ where: { name: 'Despensa' } });
         if (despensa) finalCategoryId = despensa.id;
       } else if (lowerName.includes('ensalada') || lowerName.includes('espinaca')) {
