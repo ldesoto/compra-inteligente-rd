@@ -458,11 +458,6 @@ export class ScraperService {
     const errors: string[] = [];
     let totalScraped = 0;
 
-    const browser = await chromium.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'],
-    });
-
     try {
       for (const config of configsToRun) {
         this.logger.log(`\n📦 ═══ Iniciando ${config.name} ═══`);
@@ -484,7 +479,7 @@ export class ScraperService {
         if (config.dynamicCategories) {
           this.logger.log(`  🔍 Explorando categorías dinámicamente en ${config.name}...`);
           try {
-            const dynamicCats = await this.discoverCategories(browser, config);
+            const dynamicCats = await this.discoverCategories(config);
             this.logger.log(`  ✅ ${dynamicCats.length} categorías descubiertas automáticamente.`);
             
             // Merge with existing avoiding duplicates
@@ -504,7 +499,7 @@ export class ScraperService {
 
         for (const category of categoriesToScrape) {
           try {
-            const saved = await this.scrapeCategory(browser, config, supermarket.id, category);
+            const saved = await this.scrapeCategory(config, supermarket.id, category);
             totalScraped += saved;
             this.logger.log(`  ✅ ${category.categoryName}: ${saved} productos guardados`);
           } catch (err: any) {
@@ -517,8 +512,8 @@ export class ScraperService {
         this.logger.log(`✅ ${config.name} completado.`);
         await this.sleep(10000); // Extra pause between supermarkets
       }
-    } finally {
-      await browser.close();
+    } catch (e: any) {
+      this.logger.error(`Error global en scraping: ${e.message}`);
     }
 
     this.logger.log(`\n🏁 Scraping completo: ${totalScraped} precios actualizados. Errores: ${errors.length}`);
@@ -527,9 +522,13 @@ export class ScraperService {
 
   // ─── Dynamic Category Discovery ───────────────────────────────────────────
 
-  private async discoverCategories(browser: Browser, config: SupermarketConfig): Promise<CategoryConfig[]> {
+  private async discoverCategories(config: SupermarketConfig): Promise<CategoryConfig[]> {
     if (!config.dynamicCategories) return [];
     
+    const browser = await chromium.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'],
+    });
     const page = await browser.newPage();
     try {
       await page.goto(config.dynamicCategories.startUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -565,13 +564,13 @@ export class ScraperService {
       return uniqueCats;
     } finally {
       await page.close();
+      await browser.close();
     }
   }
 
   // ─── Single category crawler ──────────────────────────────────────────────
 
   private async scrapeCategory(
-    browser: Browser,
     config: SupermarketConfig,
     supermarketId: string,
     category: CategoryConfig,
@@ -585,6 +584,13 @@ export class ScraperService {
       update: {},
       create: { name: category.dbCategoryName },
     });
+
+    const browser = await chromium.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'],
+    });
+
+    try {
 
     while (page <= category.maxPages) {
       const url = page === 1
@@ -612,6 +618,9 @@ export class ScraperService {
       this.logger.debug(`    Página ${page}/${category.maxPages}: ${products.length} productos`);
       page++;
       await this.sleep(config.rateLimit);
+    }
+    } finally {
+      await browser.close();
     }
 
     return totalSaved;
