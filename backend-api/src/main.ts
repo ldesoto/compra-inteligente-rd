@@ -19,8 +19,15 @@ async function bootstrap() {
   for (const p of allProducts) {
     const lowerName = p.name.toLowerCase();
     
-    // Fix Chicharron
-    if (despensa && (lowerName.includes('chicharron') || lowerName.includes('chicharrón') || lowerName.includes('chicharon') || lowerName.includes('chicharón'))) {
+    // Fix fake Licores (words ending in ron)
+    if (despensa && (
+      lowerName.includes('chicharron') || lowerName.includes('chicharrón') || lowerName.includes('chicharon') || lowerName.includes('chicharón') ||
+      lowerName.includes('turron') || lowerName.includes('turrón') ||
+      lowerName.includes('macarron') || lowerName.includes('macarrón') ||
+      lowerName.includes('garron') || lowerName.includes('garrón') ||
+      lowerName.includes('marron') || lowerName.includes('marrón') ||
+      lowerName.includes('cucharon') || lowerName.includes('cucharón')
+    )) {
       if (p.categoryId !== despensa.id) {
         await prisma.canonicalProduct.update({ where: { id: p.id }, data: { categoryId: despensa.id } });
         updatedCount++;

@@ -23,7 +23,7 @@ export const SearchScreen = ({ navigation }: any) => {
   const popularCategories = [
     { name: 'Despensa',              image: require('../../assets/categories/cat_despensa.png') },
     { name: 'Bebidas',               image: require('../../assets/categories/cat_bebidas.png') },
-    { name: 'Licores y Bebidas',     image: require('../../assets/categories/cat_licores.png') },
+    { name: 'Licores',               image: require('../../assets/categories/cat_licores.png') },
     { name: 'Lácteos y Refrigerados', image: require('../../assets/categories/cat_lacteos.png') },
     { name: 'Carnes y Mariscos',     image: require('../../assets/categories/cat_carnes_mariscos.png') },
     { name: 'Frutas y Vegetales',    image: require('../../assets/categories/cat_frutas.png') },
