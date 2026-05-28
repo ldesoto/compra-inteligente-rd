@@ -32,6 +32,9 @@ model User {
   budgets        CategoryBudget[]
   receipts       Receipt[]
   alerts         Alert[]
+  purchases      Purchase[]
+  savingsSnaps   SavingsSnapshot[]
+  comparisons    ComparisonRun[]
 }
 
 model CategoryBudget {
@@ -59,6 +62,8 @@ model Supermarket {
 
   stores         Store[]
   productMatches ProductMatch[]
+  purchases      Purchase[]
+  comparisonRuns ComparisonRun[]
 }
 
 model Store {
@@ -85,6 +90,7 @@ model Category {
 
   products CanonicalProduct[]
   budgets  CategoryBudget[]
+  purchaseItems PurchaseItem[]
 }
 
 model CanonicalProduct {
@@ -107,6 +113,7 @@ model CanonicalProduct {
   productMatches    ProductMatch[]
   shoppingListItems ShoppingListItem[]
   receiptItems      ReceiptItem[]
+  purchaseItems     PurchaseItem[]
 }
 
 model ProductMatch {
@@ -149,10 +156,17 @@ model ShoppingList {
   isShared  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  // Status and Estimation (Métricas Reales)
+  status              String    @default("DRAFT") // DRAFT, READY_TO_COMPARE, COMPARED, PLANNED, PURCHASED, CANCELLED, EXPIRED
+  estimatedTotal      Float?
+  plannedPurchaseDate DateTime?
 
   owner         User               @relation("ListOwner", fields: [ownerId], references: [id])
   collaborators ListCollaborator[]
   items         ShoppingListItem[]
+  purchase      Purchase?
+  comparisonRuns ComparisonRun[]
 }
 
 model ListCollaborator {
@@ -226,4 +240,70 @@ model Alert {
   createdAt   DateTime  @default(now())
 
   user        User      @relation(fields: [userId], references: [id])
+}
+
+// ----------------------------------------------------
+// 7. COMPRAS CONFIRMADAS Y MÉTRICAS (Fase 2)
+// ----------------------------------------------------
+
+model Purchase {
+  id                String         @id @default(uuid())
+  userId            String
+  shoppingListId    String?        @unique
+  supermarketId     String?        
+  purchaseDate      DateTime       @default(now())
+  confirmedTotal    Float
+  receiptOcrId      String?        
+  status            String         @default("CONFIRMED") // DRAFT, CONFIRMED, REJECTED
+  createdAt         DateTime       @default(now())
+
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shoppingList      ShoppingList?  @relation(fields: [shoppingListId], references: [id])
+  supermarket       Supermarket?   @relation(fields: [supermarketId], references: [id])
+  items             PurchaseItem[]
+  savings           SavingsSnapshot?
+}
+
+model PurchaseItem {
+  id                String       @id @default(uuid())
+  purchaseId        String
+  canonicalProdId   String?      
+  productNameRaw    String       
+  quantity          Float        @default(1)
+  confirmedPrice    Float        
+  categoryId        String?
+
+  purchase          Purchase          @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  canonicalProduct  CanonicalProduct? @relation(fields: [canonicalProdId], references: [id])
+  category          Category?         @relation(fields: [categoryId], references: [id])
+}
+
+model SavingsSnapshot {
+  id                    String   @id @default(uuid())
+  purchaseId            String   @unique
+  userId                String
+  date                  DateTime @default(now())
+  totalConfirmedSavings Float  
+  totalPotentialSavings Float? 
+  marketAverageTotal    Float  
+  highestMarketTotal    Float  
+  detailsJson           String   @default("{}") // Precios de referencia congelados
+
+  purchase              Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ComparisonRun {
+  id                String   @id @default(uuid())
+  shoppingListId    String
+  userId            String
+  supermarketId     String   
+  totalEstimated    Float
+  availabilityScore Float    
+  freshnessScore    Float    
+  createdAt         DateTime @default(now())
+
+  shoppingList      ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  supermarket       Supermarket  @relation(fields: [supermarketId], references: [id])
 }
